@@ -1,0 +1,7 @@
+package anstart.gokarty.repository;
+
+import anstart.gokarty.model.Kart;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface KartRepository extends JpaRepository<Kart, Long> {
+}
