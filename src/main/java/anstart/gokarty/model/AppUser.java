@@ -4,15 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Entity
 @Getter
 @Setter
+@Entity
 @Table(name = "app_user", schema = "gokarty")
 public class AppUser {
     @Id
@@ -24,6 +23,10 @@ public class AppUser {
     @NotNull
     @Column(name = "name", nullable = false, length = 40)
     private String name;
+
+    @Size(max = 16)
+    @Column(name = "phone", length = 16, columnDefinition = "phone(16) not null")
+    private String phone;
 
     @NotNull
     @Column(name = "email", nullable = false, length = Integer.MAX_VALUE)
@@ -41,9 +44,6 @@ public class AppUser {
     @Column(name = "enabled")
     private Boolean enabled;
 
-    @Column(name = "phone", columnDefinition = "phone(16) not null")
-    private String phone;
-
     @OneToMany(mappedBy = "idAppUser")
     private Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();
 
@@ -53,8 +53,7 @@ public class AppUser {
         inverseJoinColumns = @JoinColumn(name = "id_app_role"))
     private Set<AppRole> appRoles = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "appUser")
+    @OneToMany(mappedBy = "idAppUser")
     private Set<Reservation> reservations = new LinkedHashSet<>();
-
 
 }

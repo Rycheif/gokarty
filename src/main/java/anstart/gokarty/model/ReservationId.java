@@ -21,7 +21,7 @@ public class ReservationId implements Serializable {
     private static final long serialVersionUID = 3475016051101385462L;
     @NotNull
     @Column(name = "period", nullable = false)
-    @Type(value = PostgreSQLRangeType.class)
+    @Type(PostgreSQLRangeType.class)
     private Range<LocalDateTime> period;
 
     @NotNull

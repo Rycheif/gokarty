@@ -22,7 +22,7 @@ public class Track {
     @Column(name = "length", nullable = false)
     private Integer length;
 
-    @OneToMany(mappedBy = "track")
+    @OneToMany(mappedBy = "idTrack")
     private Set<Reservation> reservations = new LinkedHashSet<>();
 
 }

@@ -3,15 +3,10 @@ package anstart.gokarty.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.Type;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "kart", schema = "gokarty")
 public class Kart {
@@ -28,10 +23,45 @@ public class Kart {
     @ManyToMany
     @JoinTable(name = "reservation_kart",
         joinColumns = @JoinColumn(name = "id_kart"),
-        inverseJoinColumns = @JoinColumn(name = "period"))
+        inverseJoinColumns = {
+            @JoinColumn(name = "period"),
+            @JoinColumn(name = "id_track"),
+            @JoinColumn(name = "id_app_user")})
     private Set<Reservation> reservations = new LinkedHashSet<>();
-    @Column(name = "difficulty_level")
     @Enumerated(EnumType.STRING)
+
+    @Column(name = "difficulty_level", columnDefinition = "Difficulty")
     private Difficulty difficultyLevel;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Set<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(Set<Reservation> reservations) {
+        this.reservations = reservations;
+    }
+
+    public Difficulty getDifficultyLevel() {
+        return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(Difficulty difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
+    }
 }
