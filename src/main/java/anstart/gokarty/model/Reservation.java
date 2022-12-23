@@ -41,12 +41,12 @@ public class Reservation {
     @Column(name = "cost", nullable = false)
     private BigDecimal cost;
 
-    @OneToMany(mappedBy = "reservation")
-    private Set<Invoice> invoices = new LinkedHashSet<>();
-
     @ManyToMany
     @JoinTable(name = "reservation_kart",
-        joinColumns = @JoinColumn(name = "period"),
+        joinColumns = {
+            @JoinColumn(name = "period"),
+            @JoinColumn(name = "id_track"),
+            @JoinColumn(name = "id_app_user")},
         inverseJoinColumns = @JoinColumn(name = "id_kart"))
     private Set<Kart> karts = new LinkedHashSet<>();
 
