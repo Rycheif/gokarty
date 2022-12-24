@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: gokarty
+  datasource:
+    url: jdbc:postgresql://195.150.230.208:5432/2022_baka_michal
+    username: 2022_baka_michal
+    password: 34267
