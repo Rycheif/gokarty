@@ -1,4 +1,4 @@
-package anstart.gokarty.dto;
+package anstart.gokarty.payload.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
