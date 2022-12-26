@@ -1,6 +1,6 @@
 package anstart.gokarty.controller;
 
-import anstart.gokarty.payload.ExceptionInfo;
+import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.dto.AppUserDto;
 import anstart.gokarty.service.AppUserService;
 import lombok.AllArgsConstructor;
@@ -33,7 +33,7 @@ public class AppUserController {
     }
 
     @GetMapping("/user/lock/{userId}")
-    public ResponseEntity<ExceptionInfo> lockUser(@PathVariable long userId) {
+    public ResponseEntity<MessageWithTimestamp> lockUser(@PathVariable long userId) {
         log.info("Locking user with id {}", userId);
         return appUserService.lockUser(userId);
     }
@@ -45,13 +45,13 @@ public class AppUserController {
     }
 
     @PatchMapping("/updateUserInfo")
-    public ResponseEntity<ExceptionInfo> updateUsersPersonalData(@RequestBody AppUserDto appUserDto) {
+    public ResponseEntity<MessageWithTimestamp> updateUsersPersonalData(@RequestBody AppUserDto appUserDto) {
        log.info("Updating user with id {}", appUserDto.getId());
        return appUserService.updateUsersPersonalData(appUserDto);
     }
 
     @PatchMapping("/updateUsersRoles")
-    public ResponseEntity<ExceptionInfo> updateUsersRoles(@RequestBody AppUserDto appUserDto) {
+    public ResponseEntity<MessageWithTimestamp> updateUsersRoles(@RequestBody AppUserDto appUserDto) {
         log.info("Updating user with id {} with roles {}", appUserDto.getId(), appUserDto.getAppRoles());
         return appUserService.updateUsersRoles(appUserDto);
     }

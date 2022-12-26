@@ -5,7 +5,7 @@ import lombok.Value;
 import java.time.Instant;
 
 @Value
-public class ExceptionInfo {
+public class MessageWithTimestamp {
 
     Instant timestamp;
     String message;

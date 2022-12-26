@@ -32,8 +32,4 @@ public class AppRole {
     @JsonIgnoreProperties("appRoles")
     private Set<AppUser> appUsers = new LinkedHashSet<>();
 
-    public AppRole(String name, Set<AppUser> appUsers) {
-        this.name = name;
-        this.appUsers = appUsers;
-    }
 }

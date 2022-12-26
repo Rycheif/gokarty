@@ -1,4 +1,4 @@
-package anstart.gokarty.mapper;
+package anstart.gokarty.utility;
 
 import anstart.gokarty.model.AppRole;
 import anstart.gokarty.model.AppUser;
