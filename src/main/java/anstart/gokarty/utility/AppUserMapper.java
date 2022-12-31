@@ -11,20 +11,20 @@ public class AppUserMapper {
 
     public static AppUserDto mapAppUserToDTO(AppUser appUser) {
         return new AppUserDto(
-            appUser.getId(),
-            appUser.getName(),
-            appUser.getPhone(),
-            appUser.getEmail(),
-            appUser.getLocked(),
-            appUser.getEnabled(),
-            appUser.getAppRoles()
+            appUser.id(),
+            appUser.name(),
+            appUser.phone(),
+            appUser.email(),
+            appUser.locked(),
+            appUser.enabled(),
+            appUser.appRoles()
                 .stream()
                 .map(AppUserMapper::mapAppRoleToDTO)
                 .collect(Collectors.toSet()));
     }
 
     public static AppRoleDto mapAppRoleToDTO(AppRole appRole) {
-        return new AppRoleDto(appRole.getId(), appRole.getName());
+        return new AppRoleDto(appRole.id(), appRole.name());
     }
 
 }

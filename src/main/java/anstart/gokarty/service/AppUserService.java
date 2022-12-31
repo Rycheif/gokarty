@@ -95,15 +95,15 @@ public class AppUserService {
             });
 
         if (null != appUserDto.getName()) {
-            existing.setName(appUserDto.getName());
+            existing.name(appUserDto.getName());
         }
 
         if (null != appUserDto.getEmail()) {
-            existing.setEmail(appUserDto.getEmail());
+            existing.name(appUserDto.getEmail());
         }
 
         if (null != appUserDto.getPhone()) {
-            existing.setPhone(appUserDto.getPhone());
+            existing.name(appUserDto.getPhone());
         }
 
         appUserRepository.save(existing);
@@ -147,7 +147,7 @@ public class AppUserService {
                 usersRoles.add(appRole);
             });
 
-        existing.setAppRoles(usersRoles);
+        existing.appRoles(usersRoles);
         appUserRepository.save(existing);
 
         log.info("User with id {} had their roles changed to {}", appUserDto.getId(), appUserDto.getAppRoles());

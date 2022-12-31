@@ -19,10 +19,14 @@ import java.util.Objects;
 @Setter
 @Accessors(fluent = true)
 @Embeddable
-public class ReservationId implements Serializable {
-    private static final long serialVersionUID = 3475016051101385462L;
+public class ReservationKartId implements Serializable {
+    private static final long serialVersionUID = -6613274184112906909L;
     @NotNull
-    @Column(name = "period", nullable = false, columnDefinition = "daterange")
+    @Column(name = "id_kart", nullable = false)
+    private Long idKart;
+
+    @NotNull
+    @Column(name = "period", nullable = false)
     @Type(PostgreSQLRangeType.class)
     private Range<LocalDateTime> period;
 
@@ -38,15 +42,16 @@ public class ReservationId implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        ReservationId entity = (ReservationId) o;
-        return Objects.equals(this.period, entity.period) &&
+        ReservationKartId entity = (ReservationKartId) o;
+        return Objects.equals(this.idKart, entity.idKart) &&
+            Objects.equals(this.period, entity.period) &&
             Objects.equals(this.idTrack, entity.idTrack) &&
             Objects.equals(this.idAppUser, entity.idAppUser);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(period, idTrack, idAppUser);
+        return Objects.hash(idKart, period, idTrack, idAppUser);
     }
 
 }

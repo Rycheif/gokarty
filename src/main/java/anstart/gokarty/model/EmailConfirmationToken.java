@@ -5,12 +5,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.time.Instant;
 
 @Getter
 @Setter
 @Entity
+@Accessors(fluent = true)
 @Table(name = "email_confirmation_token", schema = "gokarty", indexes = {
     @Index(name = "IX_FK05", columnList = "id_app_user")
 })

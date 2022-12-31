@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -11,10 +12,9 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Accessors(fluent = true)
 @Entity
-@Table(name = "reservation", schema = "gokarty", indexes = {
-    @Index(name = "AK_reservation_id_reservation", columnList = "id_reservation", unique = true)
-})
+@Table(name = "reservation", schema = "gokarty")
 public class Reservation {
     @EmbeddedId
     private ReservationId id;
@@ -30,24 +30,13 @@ public class Reservation {
     private AppUser idAppUser;
 
     @NotNull
-    @Column(name = "id_reservation", nullable = false)
-    private Long idReservation;
-
-    @NotNull
     @Column(name = "number_of_people", nullable = false)
     private Integer numberOfPeople;
 
     @NotNull
     @Column(name = "cost", nullable = false)
     private BigDecimal cost;
-
-    @ManyToMany
-    @JoinTable(name = "reservation_kart",
-        joinColumns = {
-            @JoinColumn(name = "period"),
-            @JoinColumn(name = "id_track"),
-            @JoinColumn(name = "id_app_user")},
-        inverseJoinColumns = @JoinColumn(name = "id_kart"))
-    private Set<Kart> karts = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "reservation")
+    private Set<ReservationKart> karts = new LinkedHashSet<>();
 
 }
