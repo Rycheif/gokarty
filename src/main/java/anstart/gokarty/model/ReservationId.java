@@ -25,7 +25,6 @@ public class ReservationId implements Serializable {
     @Column(name = "period", nullable = false, columnDefinition = "daterange")
     @Type(PostgreSQLRangeType.class)
     private Range<LocalDateTime> period;
-
     @NotNull
     @Column(name = "id_track", nullable = false)
     private Long idTrack;

@@ -12,7 +12,6 @@ public class ReservationMapper {
     public static ReservationDto mapToReservationDto(Reservation reservation) {
         return new ReservationDto(
             mapToReservationIdDto(reservation.id()),
-            TrackMapper.mapToTrackDto(reservation.idTrack()),
             AppUserMapper.mapAppUserToDTO(reservation.idAppUser()),
             reservation.numberOfPeople(),
             reservation.cost(),

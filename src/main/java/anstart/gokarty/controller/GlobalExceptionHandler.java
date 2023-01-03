@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.NoSuchElementException;
 
@@ -17,7 +18,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {
         IllegalArgumentException.class,
-        EmailNotValidException.class
+        EmailNotValidException.class,
+        DateTimeException.class
     })
     public ResponseEntity<MessageWithTimestamp> handleBadRequestExceptions(RuntimeException e) {
 

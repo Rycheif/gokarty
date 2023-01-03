@@ -7,7 +7,7 @@ public class KartMapper {
 
     public static KartDto mapToKartDto(ReservationKart reservationKart) {
         return new KartDto(
-            reservationKart.id().idKart(),
+            reservationKart.idKart().id(),
             reservationKart.idKart().name(),
             reservationKart.idKart().difficultyLevel());
     }
