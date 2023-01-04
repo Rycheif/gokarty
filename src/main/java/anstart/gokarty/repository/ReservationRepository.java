@@ -2,7 +2,7 @@ package anstart.gokarty.repository;
 
 import anstart.gokarty.model.Reservation;
 import anstart.gokarty.model.ReservationId;
-import com.vladmihalcea.hibernate.type.range.Range;
+import io.hypersistence.utils.hibernate.type.range.Range;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

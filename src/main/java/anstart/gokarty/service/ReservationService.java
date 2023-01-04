@@ -9,7 +9,7 @@ import anstart.gokarty.payload.dto.ReservationDto;
 import anstart.gokarty.payload.dto.ReservationIdDto;
 import anstart.gokarty.repository.ReservationRepository;
 import anstart.gokarty.utility.ReservationMapper;
-import com.vladmihalcea.hibernate.type.range.Range;
+import io.hypersistence.utils.hibernate.type.range.Range;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -116,9 +116,4 @@ public class ReservationService {
         return null;
     }
 
-    private boolean isDateInCorrect(int year, int month, int dayOfMonth) {
-        return year > 9999 || year <= 0
-            || month <= 0 || month > 12
-            || dayOfMonth <= 0 || dayOfMonth > 31;
-    }
 }

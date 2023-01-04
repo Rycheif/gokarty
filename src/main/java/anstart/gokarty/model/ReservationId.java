@@ -1,7 +1,7 @@
 package anstart.gokarty.model;
 
-import com.vladmihalcea.hibernate.type.range.PostgreSQLRangeType;
-import com.vladmihalcea.hibernate.type.range.Range;
+import io.hypersistence.utils.hibernate.type.range.PostgreSQLRangeType;
+import io.hypersistence.utils.hibernate.type.range.Range;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
