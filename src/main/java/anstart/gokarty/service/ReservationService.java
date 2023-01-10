@@ -1,6 +1,8 @@
 package anstart.gokarty.service;
 
+import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.exception.EntityNotFoundException;
+import anstart.gokarty.exception.ForbiddenContentException;
 import anstart.gokarty.model.Reservation;
 import anstart.gokarty.model.ReservationId;
 import anstart.gokarty.payload.MessageWithTimestamp;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -33,7 +36,7 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
 
-    public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId) {
+    public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId, AppUserDetails appUser) {
         if (!isIdCorrect(reservationId)) {
             log.error("Incorrect reservation id");
             throw new IllegalArgumentException("Incorrect reservation id");
@@ -46,10 +49,13 @@ public class ReservationService {
 
         Optional<Reservation> reservation = reservationRepository.findById(id);
         if (reservation.isPresent()) {
-            return new ResponseEntity<>(
-                reservation.map(ReservationMapper::mapToReservationDto)
-                    .get(),
-                HttpStatus.OK);
+            ReservationDto reservationDto = reservation.map(ReservationMapper::mapToReservationDto).get();
+            if (!canUserSeeContent(reservationId.getIdAppUser(), appUser)) {
+                log.error("This user can't see this content");
+                throw new ForbiddenContentException("This user can't see this content");
+            }
+
+            return new ResponseEntity<>(reservationDto, HttpStatus.OK);
         }
 
         log.error("Reservation with provided id doesn't exist");
@@ -65,6 +71,21 @@ public class ReservationService {
         return reservationRepository.findAll(pageRequest)
             .map(ReservationMapper::mapToReservationDto);
 
+    }
+
+    public Page<ReservationDto> getUsersReservations(long userId, int page, int size, AppUserDetails appUser) {
+        if (!canUserSeeContent(userId, appUser)) {
+            log.error("This user can't see this content");
+            throw new ForbiddenContentException("This user can't see this content");
+        }
+
+        if (userId < 0) {
+            log.error("Incorrect id {}", userId);
+            throw new IllegalArgumentException(String.format("Incorrect id %d", userId));
+        }
+
+        return reservationRepository.getReservationByIdAppUser(userId, PageRequest.of(page, size))
+            .map(ReservationMapper::mapToReservationDto);
     }
 
     public List<ReservationDto> getReservationsFromDate(LocalDateTime date) {
@@ -83,7 +104,7 @@ public class ReservationService {
         LocalDateTime lastTime;
 
         lastTime = reservationRepository.getLastReservationOnGivenDay(
-                Range.closed(lowerBound, upperBound)).orElse(lowerBound);
+            Range.closed(lowerBound, upperBound)).orElse(lowerBound);
 
         if (lastTime.isAfter(lastTime.withHour(16).withMinute(30))) {
             log.info("No more reservations can be made");
@@ -116,4 +137,11 @@ public class ReservationService {
         return null;
     }
 
+    private boolean canUserSeeContent(long id, AppUserDetails appUser) {
+        return appUser.getId() == id
+            || appUser.getAuthorities()
+            .stream()
+            .anyMatch(grantedAuthority -> grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                || grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
+    }
 }

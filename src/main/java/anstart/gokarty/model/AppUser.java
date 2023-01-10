@@ -49,11 +49,8 @@ public class AppUser {
     @OneToMany(mappedBy = "idAppUser")
     private Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();
 
-    @ManyToMany
-    @JoinTable(name = "app_user_role",
-        joinColumns = @JoinColumn(name = "id_app_user"),
-        inverseJoinColumns = @JoinColumn(name = "id_app_role"))
-    private Set<AppRole> appRoles = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "idAppUser")
+    private Set<AppUserRole> appRoles = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "idAppUser")
     private Set<Reservation> reservations = new LinkedHashSet<>();

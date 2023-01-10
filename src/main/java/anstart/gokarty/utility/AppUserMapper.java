@@ -1,7 +1,7 @@
 package anstart.gokarty.utility;
 
-import anstart.gokarty.model.AppRole;
 import anstart.gokarty.model.AppUser;
+import anstart.gokarty.model.AppUserRole;
 import anstart.gokarty.payload.dto.AppRoleDto;
 import anstart.gokarty.payload.dto.AppUserDto;
 
@@ -23,8 +23,8 @@ public class AppUserMapper {
                 .collect(Collectors.toSet()));
     }
 
-    public static AppRoleDto mapAppRoleToDTO(AppRole appRole) {
-        return new AppRoleDto(appRole.id(), appRole.name());
+    public static AppRoleDto mapAppRoleToDTO(AppUserRole appUserRole) {
+        return new AppRoleDto(appUserRole.idAppUser().id(), appUserRole.idAppRole().name());
     }
 
 }

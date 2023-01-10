@@ -1,6 +1,5 @@
 package anstart.gokarty.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -27,11 +26,7 @@ public class AppRole {
     @Column(name = "name", nullable = false, length = 30)
     private String name;
 
-    @ManyToMany
-    @JoinTable(name = "app_user_role",
-        joinColumns = @JoinColumn(name = "id_app_role"),
-        inverseJoinColumns = @JoinColumn(name = "id_app_user"))
-    @JsonIgnoreProperties("appRoles")
-    private Set<AppUser> appUsers = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "idAppRole")
+    private Set<AppUserRole> appRoles = new LinkedHashSet<>();
 
 }

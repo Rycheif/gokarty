@@ -1,9 +1,12 @@
 package anstart.gokarty.service;
 
+import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.exception.EmailNotValidException;
 import anstart.gokarty.exception.EntityNotFoundException;
+import anstart.gokarty.exception.ForbiddenContentException;
 import anstart.gokarty.model.AppRole;
 import anstart.gokarty.model.AppUser;
+import anstart.gokarty.model.AppUserRole;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.dto.AppUserDto;
 import anstart.gokarty.repository.AppRoleRepository;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -31,16 +35,20 @@ public class AppUserService {
     private final AppUserRepository appUserRepository;
     private final AppRoleRepository appRoleRepository;
 
-    public ResponseEntity<AppUserDto> getUserById(long id) {
+    public ResponseEntity<AppUserDto> getUserById(long id, AppUserDetails appUser) {
+        if (!canUserSeeContent(id, appUser)) {
+            log.error("This user can't see this content");
+            throw new ForbiddenContentException("This user can't see this content");
+        }
         if (id < 0) {
             log.error("Incorrect id {}", id);
             throw new IllegalArgumentException(String.format("Incorrect id %d", id));
         }
 
-        Optional<AppUser> user = appUserRepository.findById(id);
-        if (user.isPresent()) {
+        Optional<AppUser> userOptional = appUserRepository.findById(id);
+        if (userOptional.isPresent()) {
             return new ResponseEntity<>(
-                user.map(AppUserMapper::mapAppUserToDTO)
+                userOptional.map(AppUserMapper::mapAppUserToDTO)
                     .get(),
                 HttpStatus.OK);
         }
@@ -62,12 +70,12 @@ public class AppUserService {
 
         return affectedRows > 0
             ? new ResponseEntity<>(
-                new MessageWithTimestamp(
-                    Instant.now(),
-                    String.format("User with id %d locked", id)),
+            new MessageWithTimestamp(
+                Instant.now(),
+                String.format("User with id %d locked", id)),
             HttpStatus.NO_CONTENT)
             : new ResponseEntity<>(
-                new MessageWithTimestamp(Instant.now(), "User wasn't locked"),
+            new MessageWithTimestamp(Instant.now(), "User wasn't locked"),
             HttpStatus.NOT_MODIFIED);
     }
 
@@ -90,8 +98,8 @@ public class AppUserService {
 
         AppUser existing = appUserRepository.findById(appUserDto.getId())
             .orElseThrow(() -> {
-                    throw new EntityNotFoundException(
-                        String.format("User with id %d doesn't exist", appUserDto.getId()));
+                throw new EntityNotFoundException(
+                    String.format("User with id %d doesn't exist", appUserDto.getId()));
             });
 
         if (null != appUserDto.getName()) {
@@ -119,7 +127,7 @@ public class AppUserService {
 
 
     public ResponseEntity<MessageWithTimestamp> updateUsersRoles(AppUserDto appUserDto) {
-        Set<AppRole> usersRoles = new HashSet<>();
+        Set<AppUserRole> usersRoles = new HashSet<>();
         if (null == appUserDto.getId() || appUserDto.getId() < 0) {
             log.error("AppUser id {} is not correct", appUserDto.getId());
             throw new IllegalArgumentException(
@@ -144,7 +152,12 @@ public class AppUserService {
                         throw new EntityNotFoundException(
                             String.format("User with id %d doesn't exist", appUserDto.getId()));
                     });
-                usersRoles.add(appRole);
+
+                AppUserRole appUserRole = new AppUserRole();
+                appUserRole.id()
+                    .idAppRole(appRole.id())
+                    .idAppUser(appUserDto.getId());
+                usersRoles.add(appUserRole);
             });
 
         existing.appRoles(usersRoles);
@@ -157,6 +170,14 @@ public class AppUserService {
                 String.format("User with id %d has been changed",
                     appUserDto.getId())),
             HttpStatus.NO_CONTENT);
+    }
+
+    private boolean canUserSeeContent(long id, AppUserDetails appUser) {
+        return appUser.getId() == id
+            || appUser.getAuthorities()
+            .stream()
+            .anyMatch(grantedAuthority -> grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                || grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
     }
 
 }

@@ -2,6 +2,7 @@ package anstart.gokarty.controller;
 
 import anstart.gokarty.exception.EmailNotValidException;
 import anstart.gokarty.exception.EntityNotFoundException;
+import anstart.gokarty.exception.ForbiddenContentException;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,13 @@ public class GlobalExceptionHandler {
 
         MessageWithTimestamp body = new MessageWithTimestamp(Instant.now(), e.getMessage());
         return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = ForbiddenContentException.class)
+    public ResponseEntity<MessageWithTimestamp> handleForbiddenContentException(RuntimeException e) {
+
+        MessageWithTimestamp body = new MessageWithTimestamp(Instant.now(), e.getMessage());
+        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
 }

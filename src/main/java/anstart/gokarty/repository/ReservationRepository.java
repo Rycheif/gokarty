@@ -3,6 +3,8 @@ package anstart.gokarty.repository;
 import anstart.gokarty.model.Reservation;
 import anstart.gokarty.model.ReservationId;
 import io.hypersistence.utils.hibernate.type.range.Range;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,11 +28,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Reserv
         nativeQuery = true)
     Optional<LocalDateTime> getLastReservationOnGivenDay(@Param("dateRange") Range<LocalDateTime> dateRange);
 
-    @Query(
-        value = "SELECT COUNT(*) FROM gokarty.reservation" +
-            "WHERE :dateRange @> PERIOD",
-        nativeQuery = true
-    )
-    LocalDateTime countReservationsOnGivenDay(@Param("dateRange") Range<LocalDateTime> dateRange);
+    @Query("select r from Reservation r where r.id.idAppUser = :userId")
+    Page<Reservation> getReservationByIdAppUser(@Param("userId") long idAppUser, Pageable pageable);
 
 }
