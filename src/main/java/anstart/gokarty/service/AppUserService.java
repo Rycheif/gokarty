@@ -107,11 +107,11 @@ public class AppUserService {
         }
 
         if (null != appUserDto.getEmail()) {
-            existing.name(appUserDto.getEmail());
+            existing.email(appUserDto.getEmail());
         }
 
         if (null != appUserDto.getPhone()) {
-            existing.name(appUserDto.getPhone());
+            existing.phone(appUserDto.getPhone());
         }
 
         appUserRepository.save(existing);
