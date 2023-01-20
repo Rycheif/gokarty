@@ -51,8 +51,8 @@ public class KartService {
 
     }
 
-    public Page<KartDto> getKarts(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+    public Page<KartDto> getKarts() {
+        PageRequest pageRequest = PageRequest.of(0, 999);
 
         return kartRepository.findAll(pageRequest)
             .map(kart ->

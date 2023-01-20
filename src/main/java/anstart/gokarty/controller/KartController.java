@@ -30,12 +30,10 @@ public class KartController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/karts")
-    public Page<KartDto> getKarts(
-        @RequestParam int page,
-        @RequestParam int size) {
+    public Page<KartDto> getKarts() {
 
-        log.info("Getting karts from the {} page of size {}", page, size);
-        return kartService.getKarts(page, size);
+        log.info("Getting karts");
+        return kartService.getKarts();
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
