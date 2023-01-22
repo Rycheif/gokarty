@@ -13,6 +13,7 @@ import anstart.gokarty.repository.AppRoleRepository;
 import anstart.gokarty.repository.AppUserRepository;
 import anstart.gokarty.utility.AppUserMapper;
 import anstart.gokarty.utility.EmailValidator;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -65,6 +66,7 @@ public class AppUserService {
             .map(AppUserMapper::mapAppUserToDTO);
     }
 
+    @Transactional
     public ResponseEntity<MessageWithTimestamp> lockUser(long id) {
         int affectedRows = appUserRepository.lockUser(id);
 

@@ -1,5 +1,6 @@
 package anstart.gokarty.controller;
 
+import anstart.gokarty.exception.AccountActivationException;
 import anstart.gokarty.exception.EmailNotValidException;
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
@@ -20,7 +21,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {
         IllegalArgumentException.class,
         EmailNotValidException.class,
-        DateTimeException.class
+        DateTimeException.class,
+        AccountActivationException.class
     })
     public ResponseEntity<MessageWithTimestamp> handleBadRequestExceptions(RuntimeException e) {
 
@@ -39,7 +41,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = ForbiddenContentException.class)
-    public ResponseEntity<MessageWithTimestamp> handleForbiddenContentException(RuntimeException e) {
+    public ResponseEntity<MessageWithTimestamp> handleForbiddenContentExceptions(RuntimeException e) {
 
         MessageWithTimestamp body = new MessageWithTimestamp(Instant.now(), e.getMessage());
         return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.FORBIDDEN);

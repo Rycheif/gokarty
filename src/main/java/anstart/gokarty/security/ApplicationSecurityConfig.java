@@ -35,6 +35,7 @@ public class ApplicationSecurityConfig {
                 auth.requestMatchers(
                         "/api/user/checkEmailAvailability",
                         "/api/availableReservationTimes").permitAll()
+                    .requestMatchers("/api/register", "/api/activateAccount").permitAll()
                     .requestMatchers("/api/availableReservationTimes").permitAll()
                     .requestMatchers("/", "index", "/css/*", "/js/*").permitAll()
                     .anyRequest().authenticated())

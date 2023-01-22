@@ -12,3 +12,4 @@ spring:
 auth-and-security:
   token-validity-hours: 24
   remember-me-parameter: "remember-me"
+  email-confirmation-token-validity-minutes: 30
