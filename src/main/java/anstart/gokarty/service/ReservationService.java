@@ -3,13 +3,16 @@ package anstart.gokarty.service;
 import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
-import anstart.gokarty.model.Reservation;
-import anstart.gokarty.model.ReservationId;
+import anstart.gokarty.model.*;
 import anstart.gokarty.payload.MessageWithTimestamp;
+import anstart.gokarty.payload.NewReservationPayload;
 import anstart.gokarty.payload.ReservationDate;
 import anstart.gokarty.payload.dto.ReservationDto;
 import anstart.gokarty.payload.dto.ReservationIdDto;
+import anstart.gokarty.repository.AppUserRepository;
+import anstart.gokarty.repository.KartRepository;
 import anstart.gokarty.repository.ReservationRepository;
+import anstart.gokarty.repository.TrackRepository;
 import anstart.gokarty.utility.ReservationMapper;
 import io.hypersistence.utils.hibernate.type.range.Range;
 import lombok.AllArgsConstructor;
@@ -20,13 +23,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -35,6 +41,9 @@ import java.util.stream.Stream;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final KartRepository kartRepository;
+    private final TrackRepository trackRepository;
+    private final AppUserRepository appUserRepository;
 
     public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId, AppUserDetails appUser) {
         if (!isIdCorrect(reservationId)) {
@@ -120,21 +129,48 @@ public class ReservationService {
             .toList();
     }
 
-    public ResponseEntity<?> createNewReservation(ReservationDto reservationDto) {
-        List<ReservationDate> availableReservationTimes = getAvailableReservationTimes(reservationDto.getId().getStart());
-
+    @Transactional
+    public ResponseEntity<?> createNewReservation(NewReservationPayload reservationPayload, AppUserDetails appUser) {
+        List<ReservationDate> availableReservationTimes = getAvailableReservationTimes(reservationPayload.start());
         if (availableReservationTimes.isEmpty()) {
-            log.error("New reservation cannot be made on this day {}", reservationDto.getId().getStart());
+            log.error("New reservation cannot be made on this day: {}", reservationPayload.start());
             return new ResponseEntity<>(
                 new MessageWithTimestamp(
                     Instant.now(),
-                    String.format("New reservation cannot be made on this day %s", reservationDto.getId().getStart())),
+                    String.format("New reservation cannot be made on this day: %s", reservationPayload.start())),
                 HttpStatus.FORBIDDEN);
         }
 
-        // TODO: Reszta metody po dodaniu Spring Security
+        Track track = trackRepository.findById(reservationPayload.trackId())
+            .orElseThrow(() -> {
+                log.error("Track with id {} doesn't exists", reservationPayload.trackId());
+                return new EntityNotFoundException(String.format("Track with id %d doesn't exists", reservationPayload.trackId()));
+            });
 
-        return null;
+        Set<Kart> reservedKarts = kartRepository.findKartsByNames(reservationPayload.kartsNames());
+        AppUser userEntity = appUserRepository.findByEmail(appUser.getEmail()).orElseThrow(() -> {
+            log.error("User with email {} doesn't exists", appUser.getEmail());
+            return new EntityNotFoundException(String.format("User with email %s doesn't exists", appUser.getEmail()));
+        });
+
+        Reservation newReservation = reservationRepository.save(
+            new Reservation().id(
+                    new ReservationId().period(
+                            Range.closed(reservationPayload.start(), reservationPayload.end()))
+                        .idTrack(reservationPayload.trackId())
+                        .idAppUser(userEntity.id()))
+                .numberOfPeople(reservationPayload.numberOfPeople())
+                .idTrack(track)
+                .idAppUser(userEntity)
+                .cost(BigDecimal.valueOf(40).multiply(BigDecimal.valueOf(reservationPayload.numberOfPeople())))
+                .karts(reservedKarts));
+
+        track.reservations().add(newReservation);
+        trackRepository.save(track);
+        userEntity.reservations().add(newReservation);
+        appUserRepository.save(userEntity);
+
+        return new ResponseEntity<>(ReservationMapper.mapToReservationDto(newReservation), HttpStatus.CREATED);
     }
 
     private boolean canUserSeeContent(long id, AppUserDetails appUser) {

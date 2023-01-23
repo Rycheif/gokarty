@@ -70,7 +70,6 @@ public class AppUserDetailsService implements UserDetailsService {
 
         emailConfirmationTokens.add(savedToken);
         savedUser.emailConfirmationTokens(emailConfirmationTokens);
-        // Jeśli to nie zostanie zrobione Hibernate wyrzuci wyjątek UnsupportedOperationException
 
         AppRole appRole = appRoleRepository.findAppRoleByName("ROLE_USER")
             .orElseThrow(() -> new EntityNotFoundException("ROLE_USER was not found"));
@@ -82,6 +81,7 @@ public class AppUserDetailsService implements UserDetailsService {
                     .idAppUser(savedUser.id())));
 
         savedUser.appRoles(Set.of(saveAppUserRole));
+        // Jeśli to nie zostanie zrobione Hibernate wyrzuci wyjątek UnsupportedOperationException
         reinitializeCollections(savedUser);
         appUserRepository.save(savedUser);
 

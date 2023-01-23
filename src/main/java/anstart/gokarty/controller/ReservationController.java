@@ -1,6 +1,7 @@
 package anstart.gokarty.controller;
 
 import anstart.gokarty.auth.AppUserDetails;
+import anstart.gokarty.payload.NewReservationPayload;
 import anstart.gokarty.payload.ReservationDate;
 import anstart.gokarty.payload.dto.ReservationDto;
 import anstart.gokarty.payload.dto.ReservationIdDto;
@@ -78,9 +79,12 @@ public class ReservationController {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @PostMapping("/reservation")
-    public ResponseEntity<?> newReservation(@RequestBody ReservationDto reservationDto) {
-        log.info("Creating new reservation on {}", reservationDto.getId().getStart());
-        return reservationService.createNewReservation(reservationDto);
+    public ResponseEntity<?> newReservation(
+        @RequestBody NewReservationPayload reservationPayload,
+        @AuthenticationPrincipal AppUserDetails appUser) {
+
+        log.info("Creating new reservation");
+        return reservationService.createNewReservation(reservationPayload, appUser);
     }
 
 }

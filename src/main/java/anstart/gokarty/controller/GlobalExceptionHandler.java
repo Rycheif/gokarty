@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {
-        IllegalArgumentException.class,
+//        IllegalArgumentException.class,
         EmailNotValidException.class,
         DateTimeException.class,
         AccountActivationException.class
