@@ -8,8 +8,29 @@ spring:
     url: jdbc:postgresql://195.150.230.208:5432/2022_baka_michal
     username: 2022_baka_michal
     password: 34267
+  mail:
+    host: localhost
+    port: 1025
+    username: user
+    password: password
+
+    properties:
+      mail:
+        smtp:
+          ssl:
+            trust: "*"
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
 
 auth-and-security:
   token-validity-hours: 24
   remember-me-parameter: "remember-me"
   email-confirmation-token-validity-minutes: 30
+
+email:
+  from: "gokarty@gokarty.pl"
+  confirmation-link: "http://localhost:8080/api/activateAccount?token="

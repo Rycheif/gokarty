@@ -49,7 +49,7 @@ public class AppUser {
     @OneToMany(mappedBy = "idAppUser")
     private Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "idAppUser")
+    @OneToMany(mappedBy = "idAppUser", fetch = FetchType.EAGER)
     private Set<AppUserRole> appRoles = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "idAppUser")

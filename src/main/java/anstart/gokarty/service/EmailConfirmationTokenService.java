@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -28,8 +28,8 @@ public class EmailConfirmationTokenService {
     }
 
     @Transactional
-    public boolean confirmToken(String token) {
-        return repository.confirmToken(token, LocalDateTime.now()) > 0;
+    public void confirmToken(String token) {
+        repository.confirmToken(token, Instant.now());
     }
 
 }

@@ -1,10 +1,12 @@
 package anstart.gokarty.auth;
 
 import anstart.gokarty.exception.EmailTakenException;
+import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.UserNotFoundException;
-import anstart.gokarty.model.AppUser;
-import anstart.gokarty.model.EmailConfirmationToken;
+import anstart.gokarty.model.*;
+import anstart.gokarty.repository.AppRoleRepository;
 import anstart.gokarty.repository.AppUserRepository;
+import anstart.gokarty.repository.AppUserRoleRepository;
 import anstart.gokarty.service.EmailConfirmationTokenService;
 import anstart.gokarty.utility.AppUserMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,12 +31,15 @@ import java.util.UUID;
 public class AppUserDetailsService implements UserDetailsService {
 
     private final AppUserRepository appUserRepository;
+    private final AppUserRoleRepository appUserRoleRepository;
+    private final AppRoleRepository appRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailConfirmationTokenService emailConfirmationTokenService;
     @Value("${auth-and-security.email-confirmation-token-validity-minutes}")
     private int tokenValidityMinutes;
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("Loading user with the email {}", email);
         return appUserRepository.findByEmail(email)
@@ -61,9 +67,21 @@ public class AppUserDetailsService implements UserDetailsService {
 
         EmailConfirmationToken savedToken = emailConfirmationTokenService.saveToken(emailConfirmationToken);
         Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();
+
         emailConfirmationTokens.add(savedToken);
         savedUser.emailConfirmationTokens(emailConfirmationTokens);
         // Jeśli to nie zostanie zrobione Hibernate wyrzuci wyjątek UnsupportedOperationException
+
+        AppRole appRole = appRoleRepository.findAppRoleByName("ROLE_USER")
+            .orElseThrow(() -> new EntityNotFoundException("ROLE_USER was not found"));
+
+        AppUserRole saveAppUserRole = appUserRoleRepository.save(
+            new AppUserRole().idAppUser(savedUser)
+                .idAppRole(appRole)
+                .id(new AppUserRoleId().idAppRole(appRole.id())
+                    .idAppUser(savedUser.id())));
+
+        savedUser.appRoles(Set.of(saveAppUserRole));
         reinitializeCollections(savedUser);
         appUserRepository.save(savedUser);
 

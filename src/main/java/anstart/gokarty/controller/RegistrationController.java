@@ -1,5 +1,6 @@
 package anstart.gokarty.controller;
 
+import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.RegistrationPayload;
 import anstart.gokarty.service.RegistrationService;
 import lombok.AllArgsConstructor;
@@ -16,13 +17,13 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody RegistrationPayload registrationPayload) {
+    public ResponseEntity<MessageWithTimestamp> registerUser(@RequestBody RegistrationPayload registrationPayload) {
         log.info("Registering new user");
         return registrationService.registerUser(registrationPayload);
     }
 
     @GetMapping("/activateAccount")
-    public ResponseEntity<String> activateAccount(@RequestParam String token) {
+    public ResponseEntity<MessageWithTimestamp> activateAccount(@RequestParam String token) {
         return registrationService.activateAccount(token);
     }
 
