@@ -1,6 +1,6 @@
 package anstart.gokarty.controller;
 
-import anstart.gokarty.auth.AppUserDetails;
+import anstart.gokarty.model.AppUser;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.UpdateUserRolesPayload;
 import anstart.gokarty.payload.dto.AppUserDto;
@@ -23,7 +23,7 @@ public class AppUserController {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<AppUserDto> getUserById(@PathVariable long userId, @AuthenticationPrincipal AppUserDetails appUser) {
+    public ResponseEntity<AppUserDto> getUserById(@PathVariable long userId, @AuthenticationPrincipal AppUser appUser) {
         log.info("Getting user with id {}", userId);
         return appUserService.getUserById(userId, appUser);
     }

@@ -1,7 +1,7 @@
 package anstart.gokarty.controller;
 
 
-import anstart.gokarty.auth.AppUserDetails;
+import anstart.gokarty.model.AppUser;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.dto.KartDto;
 import anstart.gokarty.service.KartService;
@@ -23,7 +23,7 @@ public class KartController {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/kart/{kartId}")
-    public ResponseEntity<KartDto> getKartById(@PathVariable long kartId, @AuthenticationPrincipal AppUserDetails appUser) {
+    public ResponseEntity<KartDto> getKartById(@PathVariable long kartId, @AuthenticationPrincipal AppUser appUser) {
         log.info("Getting kart with id {}", kartId);
         return kartService.getKartById(kartId, appUser);
     }

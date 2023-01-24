@@ -1,10 +1,7 @@
 package anstart.gokarty.controller;
 
-import anstart.gokarty.auth.AppUserDetails;
-import anstart.gokarty.model.Track;
+import anstart.gokarty.model.AppUser;
 import anstart.gokarty.payload.MessageWithTimestamp;
-import anstart.gokarty.payload.dto.AppUserDto;
-import anstart.gokarty.payload.dto.ReservationDto;
 import anstart.gokarty.payload.dto.TrackDto;
 import anstart.gokarty.service.TrackService;
 import lombok.AllArgsConstructor;
@@ -24,7 +21,7 @@ public class TrackController {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/track/{trackId}")
-    public ResponseEntity<TrackDto> getUserById(@PathVariable long trackId, @AuthenticationPrincipal AppUserDetails appUser) {
+    public ResponseEntity<TrackDto> getUserById(@PathVariable long trackId, @AuthenticationPrincipal AppUser appUser) {
         log.info("Getting track with id {}", trackId);
         return trackService.getTrackById(trackId, appUser);
     }

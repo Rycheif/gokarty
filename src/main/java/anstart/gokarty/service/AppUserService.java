@@ -1,11 +1,9 @@
 package anstart.gokarty.service;
 
-import anstart.gokarty.auth.AppUserDetails;
-import anstart.gokarty.exception.EmailNotValidException;
-import anstart.gokarty.exception.EntityNotFoundException;
-import anstart.gokarty.exception.ForbiddenContentException;
+import anstart.gokarty.exception.*;
 import anstart.gokarty.model.AppRole;
 import anstart.gokarty.model.AppUser;
+import anstart.gokarty.model.EmailConfirmationToken;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.UpdateUserRolesPayload;
 import anstart.gokarty.payload.dto.AppUserDto;
@@ -14,27 +12,91 @@ import anstart.gokarty.repository.AppUserRepository;
 import anstart.gokarty.utility.AppUserMapper;
 import anstart.gokarty.utility.EmailValidator;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
-@AllArgsConstructor
-public class AppUserService {
+@RequiredArgsConstructor
+public class AppUserService implements UserDetailsService {
 
     private final AppUserRepository appUserRepository;
     private final AppRoleRepository appRoleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailConfirmationTokenService emailConfirmationTokenService;
+    @Value("${auth-and-security.email-confirmation-token-validity-minutes}")
+    private int tokenValidityMinutes;
 
-    public ResponseEntity<AppUserDto> getUserById(long id, AppUserDetails appUser) {
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.info("Loading user with the email {}", email);
+        return appUserRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException(
+                String.format("User with email %s wasn't found", email)));
+    }
+
+    public String registerUserInTheDB(AppUser appUser) {
+        Boolean exists = appUserRepository.existsByEmailIgnoreCase(appUser.getEmail());
+        if (exists) {
+            log.error("Email address {} is already taken", appUser.getEmail());
+            throw new EmailTakenException(
+                String.format("Email address %s is already taken", appUser.getEmail()));
+        }
+
+        appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
+        AppUser savedUser = appUserRepository.save(appUser);
+
+        String confirmationToken = UUID.randomUUID().toString();
+        EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken().token(confirmationToken)
+            .createdAt(Instant.now())
+            .expiresAt(Instant.now().plus(Duration.ofMinutes(tokenValidityMinutes)))
+            .idAppUser(savedUser);
+
+        EmailConfirmationToken savedToken = emailConfirmationTokenService.saveToken(emailConfirmationToken);
+        Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();
+
+        emailConfirmationTokens.add(savedToken);
+        savedUser.setEmailConfirmationTokens(emailConfirmationTokens);
+
+        AppRole appRole = appRoleRepository.findAppRoleByName("ROLE_USER")
+            .orElseThrow(() -> new EntityNotFoundException("ROLE_USER was not found"));
+
+        savedUser.getRoles().add(appRole);
+        // Jeśli to nie zostanie zrobione Hibernate wyrzuci wyjątek UnsupportedOperationException
+        //reinitializeCollections(savedUser);
+        appUserRepository.save(savedUser);
+
+        return confirmationToken;
+    }
+
+    public void enableUser(String email) {
+        appUserRepository.findByEmail(email)
+            .ifPresent(appUser -> {
+                appUser.setEnabled(true);
+                appUserRepository.save(appUser);
+            });
+    }
+
+    public ResponseEntity<AppUserDto> getUserById(long id, AppUser appUser) {
         if (!canUserSeeContent(id, appUser)) {
             log.error("This user can't see this content");
             throw new ForbiddenContentException("This user can't see this content");
@@ -103,15 +165,15 @@ public class AppUserService {
             });
 
         if (null != appUserDto.getName()) {
-            existing.name(appUserDto.getName());
+            existing.setUsername(appUserDto.getName());
         }
 
         if (null != appUserDto.getEmail()) {
-            existing.email(appUserDto.getEmail());
+            existing.setEmail(appUserDto.getEmail());
         }
 
         if (null != appUserDto.getPhone()) {
-            existing.phone(appUserDto.getPhone());
+            existing.setPhone(appUserDto.getPhone());
         }
 
         appUserRepository.save(existing);
@@ -149,8 +211,8 @@ public class AppUserService {
                     String.format("Role with name %s doesn't exist", payload.roleName()));
             });
 
-        existing.roles().clear();
-        existing.roles().add(appRole);
+        existing.getRoles().clear();
+        existing.getRoles().add(appRole);
         appUserRepository.save(existing);
 
         log.info("User with id {} had their roles changed to {}", payload.userId(), payload.roleName());
@@ -162,7 +224,7 @@ public class AppUserService {
             HttpStatus.NO_CONTENT);
     }
 
-    private boolean canUserSeeContent(long id, AppUserDetails appUser) {
+    private boolean canUserSeeContent(long id, AppUser appUser) {
         return appUser.getId() == id
             || appUser.getAuthorities()
             .stream()

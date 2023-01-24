@@ -1,18 +1,13 @@
 package anstart.gokarty.service;
 
 
-import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
 import anstart.gokarty.model.AppUser;
 import anstart.gokarty.model.Track;
 import anstart.gokarty.payload.MessageWithTimestamp;
-import anstart.gokarty.payload.ReservationDate;
-import anstart.gokarty.payload.dto.AppUserDto;
-import anstart.gokarty.payload.dto.ReservationDto;
 import anstart.gokarty.payload.dto.TrackDto;
 import anstart.gokarty.repository.TrackRepository;
-import anstart.gokarty.utility.AppUserMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,7 +18,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -33,7 +27,7 @@ public class TrackService {
     private final TrackRepository trackRepository;
 
 
-    public ResponseEntity<TrackDto> getTrackById(long id, AppUserDetails appUser) {
+    public ResponseEntity<TrackDto> getTrackById(long id, AppUser appUser) {
         if (!canUserSeeContent(id, appUser)) {
             log.error("This user can't see this content");
             throw new ForbiddenContentException("This user can't see this content");
@@ -46,37 +40,37 @@ public class TrackService {
         Optional<Track> trackOptional = trackRepository.findById(id);
         if (trackOptional.isPresent()) {
             return new ResponseEntity<>(
-                    trackOptional.map(track ->
-                                    new TrackDto(track.id(), track.length())).get(),
-                    HttpStatus.OK);
+                trackOptional.map(track ->
+                    new TrackDto(track.id(), track.length())).get(),
+                HttpStatus.OK);
         }
 
         log.error("Track with id {} doesn't exist", id);
         throw new EntityNotFoundException(
-                String.format("Track with id %d doesn't exist", id));
+            String.format("Track with id %d doesn't exist", id));
     }
 
     public Page<TrackDto> getTracks() {
         PageRequest pageRequest = PageRequest.of(0, 999);
 
         return trackRepository.findAll(pageRequest)
-                .map(track ->
-                        new TrackDto(track.id(), track.length())
-                );
+            .map(track ->
+                new TrackDto(track.id(), track.length())
+            );
     }
 
     public ResponseEntity<MessageWithTimestamp> updateTrackData(TrackDto trackDto) {
         if (null == trackDto.getId() || trackDto.getId() < 0) {
             log.error("Track id {} is not correct", trackDto.getId());
             throw new IllegalArgumentException(
-                    String.format("Track id %d is not correct", trackDto.getId()));
+                String.format("Track id %d is not correct", trackDto.getId()));
         }
 
         Track existing = trackRepository.findById(trackDto.getId())
-                .orElseThrow(() -> {
-                    throw new EntityNotFoundException(
-                            String.format("Track with id %d doesn't exist", trackDto.getId()));
-                });
+            .orElseThrow(() -> {
+                throw new EntityNotFoundException(
+                    String.format("Track with id %d doesn't exist", trackDto.getId()));
+            });
 
 
         if (null != trackDto.getLength()) {
@@ -84,16 +78,15 @@ public class TrackService {
         }
 
 
-
         trackRepository.save(existing);
 
         log.info("Track with id {} has been changed", trackDto.getId());
         return new ResponseEntity<>(
-                new MessageWithTimestamp(
-                        Instant.now(),
-                        String.format("Track with id %d has been changed",
-                                trackDto.getId())),
-                HttpStatus.OK);
+            new MessageWithTimestamp(
+                Instant.now(),
+                String.format("Track with id %d has been changed",
+                    trackDto.getId())),
+            HttpStatus.OK);
     }
 
 
@@ -103,10 +96,10 @@ public class TrackService {
         if (trackRepository.findById(trackDto.getId()).isPresent()) {
             log.error("Id: {} is occupied", trackDto.getId());
             return new ResponseEntity<>(
-                    new MessageWithTimestamp(
-                            Instant.now(),
-                            String.format("Id: %d is occupied", trackDto.getId())),
-                    HttpStatus.FORBIDDEN);
+                new MessageWithTimestamp(
+                    Instant.now(),
+                    String.format("Id: %d is occupied", trackDto.getId())),
+                HttpStatus.FORBIDDEN);
         }
 
         // TODO: Reszta metody po dodaniu Spring Security
@@ -115,15 +108,12 @@ public class TrackService {
     }
 
 
-
-
-
-    private boolean canUserSeeContent(long id, AppUserDetails appUser) {
+    private boolean canUserSeeContent(long id, AppUser appUser) {
         return appUser.getId() == id
-                || appUser.getAuthorities()
-                .stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                        || grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
+            || appUser.getAuthorities()
+            .stream()
+            .anyMatch(grantedAuthority -> grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                || grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
     }
 
 }

@@ -1,6 +1,5 @@
 package anstart.gokarty.service;
 
-import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
 import anstart.gokarty.model.*;
@@ -45,7 +44,7 @@ public class ReservationService {
     private final TrackRepository trackRepository;
     private final AppUserRepository appUserRepository;
 
-    public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId, AppUserDetails appUser) {
+    public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId, AppUser appUser) {
         if (!isIdCorrect(reservationId)) {
             log.error("Incorrect reservation id");
             throw new IllegalArgumentException("Incorrect reservation id");
@@ -82,7 +81,7 @@ public class ReservationService {
 
     }
 
-    public Page<ReservationDto> getUsersReservations(long userId, int page, int size, AppUserDetails appUser) {
+    public Page<ReservationDto> getUsersReservations(long userId, int page, int size, AppUser appUser) {
         if (!canUserSeeContent(userId, appUser)) {
             log.error("This user can't see this content");
             throw new ForbiddenContentException("This user can't see this content");
@@ -130,7 +129,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public ResponseEntity<?> createNewReservation(NewReservationPayload reservationPayload, AppUserDetails appUser) {
+    public ResponseEntity<?> createNewReservation(NewReservationPayload reservationPayload, AppUser appUser) {
         List<ReservationDate> availableReservationTimes = getAvailableReservationTimes(reservationPayload.start());
         if (availableReservationTimes.isEmpty()) {
             log.error("New reservation cannot be made on this day: {}", reservationPayload.start());
@@ -158,7 +157,7 @@ public class ReservationService {
                     new ReservationId().period(
                             Range.closed(reservationPayload.start(), reservationPayload.end()))
                         .idTrack(reservationPayload.trackId())
-                        .idAppUser(userEntity.id()))
+                        .idAppUser(userEntity.getId()))
                 .numberOfPeople(reservationPayload.numberOfPeople())
                 .idTrack(track)
                 .idAppUser(userEntity)
@@ -167,13 +166,13 @@ public class ReservationService {
 
         track.reservations().add(newReservation);
         trackRepository.save(track);
-        userEntity.reservations().add(newReservation);
+        userEntity.getReservations().add(newReservation);
         appUserRepository.save(userEntity);
 
         return new ResponseEntity<>(ReservationMapper.mapToReservationDto(newReservation), HttpStatus.CREATED);
     }
 
-    private boolean canUserSeeContent(long id, AppUserDetails appUser) {
+    private boolean canUserSeeContent(long id, AppUser appUser) {
         return appUser.getId() == id
             || appUser.getAuthorities()
             .stream()

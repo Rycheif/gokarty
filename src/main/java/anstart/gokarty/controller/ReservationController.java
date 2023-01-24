@@ -1,6 +1,6 @@
 package anstart.gokarty.controller;
 
-import anstart.gokarty.auth.AppUserDetails;
+import anstart.gokarty.model.AppUser;
 import anstart.gokarty.payload.NewReservationPayload;
 import anstart.gokarty.payload.ReservationDate;
 import anstart.gokarty.payload.dto.ReservationDto;
@@ -30,7 +30,7 @@ public class ReservationController {
     @GetMapping("/reservation")
     public ResponseEntity<ReservationDto> getReservationById(
         @Valid @RequestBody ReservationIdDto reservationId,
-        @AuthenticationPrincipal AppUserDetails appUser) {
+        @AuthenticationPrincipal AppUser appUser) {
 
         log.info("Getting reservation with id {}", reservationId);
         return reservationService.getReservationById(reservationId, appUser);
@@ -50,7 +50,7 @@ public class ReservationController {
         @RequestParam long userId,
         @RequestParam int page,
         @RequestParam int size,
-        @AuthenticationPrincipal AppUserDetails appUser) {
+        @AuthenticationPrincipal AppUser appUser) {
 
         log.info("Getting reservation of user with id {} from page {} of size {}", userId, page, size);
         return reservationService.getUsersReservations(userId, page, size, appUser);
@@ -81,7 +81,7 @@ public class ReservationController {
     @PostMapping("/reservation")
     public ResponseEntity<?> newReservation(
         @RequestBody NewReservationPayload reservationPayload,
-        @AuthenticationPrincipal AppUserDetails appUser) {
+        @AuthenticationPrincipal AppUser appUser) {
 
         log.info("Creating new reservation");
         return reservationService.createNewReservation(reservationPayload, appUser);

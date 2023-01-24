@@ -1,6 +1,5 @@
 package anstart.gokarty.service;
 
-import anstart.gokarty.auth.AppUserDetailsService;
 import anstart.gokarty.exception.AccountActivationException;
 import anstart.gokarty.exception.EmailNotValidException;
 import anstart.gokarty.model.AppUser;
@@ -24,8 +23,8 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class RegistrationService {
 
-    private final AppUserDetailsService appUserDetailsService;
     private final EmailConfirmationTokenService confirmationTokenService;
+    private final AppUserService appUserService;
     private final EmailSender emailSender;
     @Value("${email.confirmation-link}")
     private String linkToConfirmation;
@@ -39,12 +38,13 @@ public class RegistrationService {
                 String.format("Email %s is not valid", registrationPayload.getEmail()));
         }
 
-        AppUser newAppUser = new AppUser().name(registrationPayload.getUsername())
-            .phone(registrationPayload.getPhone())
-            .email(registrationPayload.getEmail())
-            .password(registrationPayload.getPassword());
+        AppUser newAppUser = new AppUser(
+            registrationPayload.getUsername(),
+            registrationPayload.getPhone(),
+            registrationPayload.getEmail(),
+            registrationPayload.getPassword());
 
-        String emailConfirmationToken = appUserDetailsService.registerUserInTheDB(newAppUser);
+        String emailConfirmationToken = appUserService.registerUserInTheDB(newAppUser);
         CompletableFuture.runAsync(() -> {
                 log.debug("Sending email");
                 emailSender.sendMailWithHtmlBody(
@@ -76,7 +76,7 @@ public class RegistrationService {
         }
 
         confirmationTokenService.confirmToken(token);
-        appUserDetailsService.enableUser(emailConfirmationToken.idAppUser().email());
+        appUserService.enableUser(emailConfirmationToken.idAppUser().getEmail());
 
         return new ResponseEntity<>(
             new MessageWithTimestamp(

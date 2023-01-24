@@ -1,8 +1,8 @@
 package anstart.gokarty.service;
 
-import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
+import anstart.gokarty.model.AppUser;
 import anstart.gokarty.model.Kart;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.dto.KartDto;
@@ -26,7 +26,7 @@ public class KartService {
 
     private final KartRepository kartRepository;
 
-    public ResponseEntity<KartDto> getKartById(long id, AppUserDetails appUser) {
+    public ResponseEntity<KartDto> getKartById(long id, AppUser appUser) {
         if (!canUserSeeContent(id, appUser)) {
             log.error("This user can't see this content");
             throw new ForbiddenContentException("This user can't see this content");
@@ -113,7 +113,7 @@ public class KartService {
     }
 
 
-    private boolean canUserSeeContent(long id, AppUserDetails appUser) {
+    private boolean canUserSeeContent(long id, AppUser appUser) {
         return appUser.getId() == id
             || appUser.getAuthorities()
             .stream()

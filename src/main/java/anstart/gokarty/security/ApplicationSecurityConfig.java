@@ -1,6 +1,6 @@
 package anstart.gokarty.security;
 
-import anstart.gokarty.auth.AppUserDetailsService;
+import anstart.gokarty.service.AppUserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,12 +61,12 @@ public class ApplicationSecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(
-        AppUserDetailsService appUserDetailsService,
+        AppUserService appUserService,
         PasswordEncoder passwordEncoder) {
 
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder);
-        provider.setUserDetailsService(appUserDetailsService);
+        provider.setUserDetailsService(appUserService);
 
         return provider;
     }
