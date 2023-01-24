@@ -26,7 +26,11 @@ public class AppRole {
     @Column(name = "name", nullable = false, length = 30)
     private String name;
 
-    @OneToMany(mappedBy = "idAppRole")
-    private Set<AppUserRole> appRoles = new LinkedHashSet<>();
+    @ManyToMany
+    @JoinTable(
+        name = "app_user_role",
+        joinColumns = @JoinColumn(name = "id_app_role", referencedColumnName = "id_app_role", nullable = false),
+        inverseJoinColumns = @JoinColumn(name = "id_app_user"))
+    private Set<AppUser> appUsers = new LinkedHashSet<>();
 
 }

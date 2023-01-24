@@ -6,8 +6,8 @@ import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
 import anstart.gokarty.model.AppRole;
 import anstart.gokarty.model.AppUser;
-import anstart.gokarty.model.AppUserRole;
 import anstart.gokarty.payload.MessageWithTimestamp;
+import anstart.gokarty.payload.UpdateUserRolesPayload;
 import anstart.gokarty.payload.dto.AppUserDto;
 import anstart.gokarty.repository.AppRoleRepository;
 import anstart.gokarty.repository.AppUserRepository;
@@ -24,9 +24,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -127,50 +125,40 @@ public class AppUserService {
             HttpStatus.OK);
     }
 
-
-    public ResponseEntity<MessageWithTimestamp> updateUsersRoles(AppUserDto appUserDto) {
-        Set<AppUserRole> usersRoles = new HashSet<>();
-        if (null == appUserDto.getId() || appUserDto.getId() < 0) {
-            log.error("AppUser id {} is not correct", appUserDto.getId());
+    public ResponseEntity<MessageWithTimestamp> updateUsersRoles(UpdateUserRolesPayload payload) {
+        if (null == payload.userId() || payload.userId() < 0) {
+            log.error("AppUser id {} is not correct", payload.userId());
             throw new IllegalArgumentException(
-                String.format("AppUser id %d is not correct", appUserDto.getId()));
+                String.format("AppUser id %d is not correct", payload.userId()));
         }
 
-        if (null == appUserDto.getAppRoles() || appUserDto.getAppRoles().isEmpty()) {
-            log.error("AppUser has no roles provided");
-            throw new IllegalArgumentException("AppUser has no roles provided");
+        if (payload.roleName().isEmpty()) {
+            log.error("No roles provided");
+            throw new IllegalArgumentException("No roles provided");
         }
 
-        AppUser existing = appUserRepository.findById(appUserDto.getId())
+        AppUser existing = appUserRepository.findById(payload.userId())
             .orElseThrow(() -> {
                 throw new EntityNotFoundException(
-                    String.format("User with id %d doesn't exist", appUserDto.getId()));
+                    String.format("User with id %d doesn't exist", payload.userId()));
             });
 
-        appUserDto.getAppRoles()
-            .forEach(appRoleDto -> {
-                AppRole appRole = appRoleRepository.findAppRoleByName(appRoleDto.getName())
-                    .orElseThrow(() -> {
-                        throw new EntityNotFoundException(
-                            String.format("User with id %d doesn't exist", appUserDto.getId()));
-                    });
-
-                AppUserRole appUserRole = new AppUserRole();
-                appUserRole.id()
-                    .idAppRole(appRole.id())
-                    .idAppUser(appUserDto.getId());
-                usersRoles.add(appUserRole);
+        AppRole appRole = appRoleRepository.findAppRoleByName(payload.roleName())
+            .orElseThrow(() -> {
+                throw new EntityNotFoundException(
+                    String.format("Role with name %s doesn't exist", payload.roleName()));
             });
 
-        existing.appRoles(usersRoles);
+        existing.roles().clear();
+        existing.roles().add(appRole);
         appUserRepository.save(existing);
 
-        log.info("User with id {} had their roles changed to {}", appUserDto.getId(), appUserDto.getAppRoles());
+        log.info("User with id {} had their roles changed to {}", payload.userId(), payload.roleName());
         return new ResponseEntity<>(
             new MessageWithTimestamp(
                 Instant.now(),
                 String.format("User with id %d has been changed",
-                    appUserDto.getId())),
+                    payload.userId())),
             HttpStatus.NO_CONTENT);
     }
 

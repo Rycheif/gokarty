@@ -49,8 +49,12 @@ public class AppUser {
     @OneToMany(mappedBy = "idAppUser")
     private Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "idAppUser", fetch = FetchType.EAGER)
-    private Set<AppUserRole> appRoles = new LinkedHashSet<>();
+    @ManyToMany
+    @JoinTable(
+        name = "app_user_role",
+        joinColumns = @JoinColumn(name = "id_app_user", referencedColumnName = "id_app_user", nullable = false),
+        inverseJoinColumns = @JoinColumn(name = "id_app_role"))
+    private Set<AppRole> roles = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "idAppUser")
     private Set<Reservation> reservations = new LinkedHashSet<>();

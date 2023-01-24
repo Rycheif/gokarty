@@ -1,8 +1,8 @@
 package anstart.gokarty.utility;
 
 import anstart.gokarty.auth.AppUserDetails;
+import anstart.gokarty.model.AppRole;
 import anstart.gokarty.model.AppUser;
-import anstart.gokarty.model.AppUserRole;
 import anstart.gokarty.payload.dto.AppRoleDto;
 import anstart.gokarty.payload.dto.AppUserDto;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,14 +19,14 @@ public class AppUserMapper {
             appUser.email(),
             appUser.locked(),
             appUser.enabled(),
-            appUser.appRoles()
+            appUser.roles()
                 .stream()
                 .map(AppUserMapper::mapAppRoleToDTO)
                 .collect(Collectors.toSet()));
     }
 
-    public static AppRoleDto mapAppRoleToDTO(AppUserRole appUserRole) {
-        return new AppRoleDto(appUserRole.idAppUser().id(), appUserRole.idAppRole().name());
+    public static AppRoleDto mapAppRoleToDTO(AppRole appRole) {
+        return new AppRoleDto(appRole.id(), appRole.name());
     }
 
     public static AppUserDetails mapAppUserToAppUserDetails(AppUser appUser) {
@@ -35,9 +35,10 @@ public class AppUserMapper {
             appUser.name(),
             appUser.email(),
             appUser.password(),
-            appUser.appRoles().stream()
-                .map(appUserRole ->
-                    new SimpleGrantedAuthority(appUserRole.idAppRole().name()))
+            appUser.roles()
+                .stream()
+                .map(appRole ->
+                    new SimpleGrantedAuthority(appRole.name()))
                 .collect(Collectors.toSet()),
             appUser.locked(),
             appUser.enabled()

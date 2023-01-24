@@ -8,6 +8,7 @@ import anstart.gokarty.model.EmailConfirmationToken;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.RegistrationPayload;
 import anstart.gokarty.utility.EmailValidator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ public class RegistrationService {
     @Value("${auth-and-security.email-confirmation-token-validity-minutes}")
     private int tokenValidityMinutes;
 
+    @Transactional
     public ResponseEntity<MessageWithTimestamp> registerUser(RegistrationPayload registrationPayload) {
         if (!EmailValidator.isEmailValid(registrationPayload.getEmail())) {
             throw new EmailNotValidException(
@@ -43,8 +45,7 @@ public class RegistrationService {
             .password(registrationPayload.getPassword());
 
         String emailConfirmationToken = appUserDetailsService.registerUserInTheDB(newAppUser);
-        CompletableFuture.runAsync(() ->
-            {
+        CompletableFuture.runAsync(() -> {
                 log.debug("Sending email");
                 emailSender.sendMailWithHtmlBody(
                     registrationPayload.getEmail(),
@@ -57,8 +58,8 @@ public class RegistrationService {
         return new ResponseEntity<>(
             new MessageWithTimestamp(
                 Instant.now(),
-                emailConfirmationToken),
-            HttpStatus.OK);
+                "User created"),
+            HttpStatus.CREATED);
     }
 
     public ResponseEntity<MessageWithTimestamp> activateAccount(String token) {

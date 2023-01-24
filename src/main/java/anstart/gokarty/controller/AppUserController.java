@@ -2,6 +2,7 @@ package anstart.gokarty.controller;
 
 import anstart.gokarty.auth.AppUserDetails;
 import anstart.gokarty.payload.MessageWithTimestamp;
+import anstart.gokarty.payload.UpdateUserRolesPayload;
 import anstart.gokarty.payload.dto.AppUserDto;
 import anstart.gokarty.service.AppUserService;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,7 @@ public class AppUserController {
         @RequestParam int page,
         @RequestParam int size) {
 
-        log.info("Getting user from the {} page of size {}", page, size);
+        log.info("Getting users from the {} page of size {}", page, size);
         return appUserService.getUsers(page, size);
     }
 
@@ -59,9 +60,9 @@ public class AppUserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/user/updateUsersRoles")
-    public ResponseEntity<MessageWithTimestamp> updateUsersRoles(@RequestBody AppUserDto appUserDto) {
-        log.info("Updating user with id {} with roles {}", appUserDto.getId(), appUserDto.getAppRoles());
-        return appUserService.updateUsersRoles(appUserDto);
+    public ResponseEntity<MessageWithTimestamp> updateUsersRoles(@RequestBody UpdateUserRolesPayload payload) {
+        log.info("Updating user with id {} with roles {}", payload.userId(), payload.roleName());
+        return appUserService.updateUsersRoles(payload);
     }
 
 }
