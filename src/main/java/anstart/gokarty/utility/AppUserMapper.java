@@ -24,7 +24,7 @@ public class AppUserMapper {
     }
 
     public static AppRoleDto mapAppRoleToDTO(AppRole appRole) {
-        return new AppRoleDto(appRole.id(), appRole.name());
+        return new AppRoleDto(appRole.getId(), appRole.getName());
     }
 
 }

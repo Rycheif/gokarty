@@ -2,17 +2,19 @@ package anstart.gokarty.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+import lombok.*;
+import org.hibernate.Hibernate;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
 @Setter
-@Accessors(fluent = true)
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "reservation", schema = "gokarty")
 public class Reservation {
@@ -22,11 +24,13 @@ public class Reservation {
     @MapsId("idTrack")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_track", nullable = false)
+    @ToString.Exclude
     private Track idTrack;
 
     @MapsId("idAppUser")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_app_user", nullable = false)
+    @ToString.Exclude
     private AppUser idAppUser;
 
     @NotNull
@@ -45,6 +49,19 @@ public class Reservation {
             @JoinColumn(name = "id_app_user", referencedColumnName = "id_app_user", nullable = false)
         },
         inverseJoinColumns = @JoinColumn(name = "id_kart"))
+    @ToString.Exclude
     private Set<Kart> karts = new LinkedHashSet<>();
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Reservation that = (Reservation) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

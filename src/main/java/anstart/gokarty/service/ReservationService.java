@@ -50,10 +50,10 @@ public class ReservationService {
             throw new IllegalArgumentException("Incorrect reservation id");
         }
 
-        ReservationId id = new ReservationId().idAppUser(
-                reservationId.getIdAppUser())
-            .idTrack(reservationId.getIdTrack())
-            .period(Range.closed(reservationId.getStart(), reservationId.getEnd()));
+        ReservationId id = new ReservationId(
+            Range.closed(reservationId.getStart(), reservationId.getEnd()),
+            reservationId.getIdTrack(),
+            reservationId.getIdAppUser());
 
         Optional<Reservation> reservation = reservationRepository.findById(id);
         if (reservation.isPresent()) {
@@ -153,18 +153,18 @@ public class ReservationService {
         });
 
         Reservation newReservation = reservationRepository.save(
-            new Reservation().id(
-                    new ReservationId().period(
-                            Range.closed(reservationPayload.start(), reservationPayload.end()))
-                        .idTrack(reservationPayload.trackId())
-                        .idAppUser(userEntity.getId()))
-                .numberOfPeople(reservationPayload.numberOfPeople())
-                .idTrack(track)
-                .idAppUser(userEntity)
-                .cost(BigDecimal.valueOf(40).multiply(BigDecimal.valueOf(reservationPayload.numberOfPeople())))
-                .karts(reservedKarts));
+            new Reservation(
+                new ReservationId(
+                    Range.closed(reservationPayload.start(), reservationPayload.end()),
+                    reservationPayload.trackId(),
+                    userEntity.getId()),
+                track,
+                userEntity,
+                reservationPayload.numberOfPeople(),
+                BigDecimal.valueOf(40).multiply(BigDecimal.valueOf(reservationPayload.numberOfPeople())),
+                reservedKarts));
 
-        track.reservations().add(newReservation);
+        track.getReservations().add(newReservation);
         trackRepository.save(track);
         userEntity.getReservations().add(newReservation);
         appUserRepository.save(userEntity);

@@ -11,11 +11,11 @@ public class ReservationMapper {
 
     public static ReservationDto mapToReservationDto(Reservation reservation) {
         return new ReservationDto(
-            mapToReservationIdDto(reservation.id()),
-            AppUserMapper.mapAppUserToDTO(reservation.idAppUser()),
-            reservation.numberOfPeople(),
-            reservation.cost(),
-            reservation.karts()
+            mapToReservationIdDto(reservation.getId()),
+            AppUserMapper.mapAppUserToDTO(reservation.getIdAppUser()),
+            reservation.getNumberOfPeople(),
+            reservation.getCost(),
+            reservation.getKarts()
                 .stream()
                 .map(KartMapper::mapToKartDto)
                 .collect(Collectors.toSet())
@@ -24,10 +24,10 @@ public class ReservationMapper {
 
     public static ReservationIdDto mapToReservationIdDto(ReservationId reservationId) {
         return new ReservationIdDto(
-            reservationId.period().lower(),
-            reservationId.period().upper(),
-            reservationId.idTrack(),
-            reservationId.idAppUser());
+            reservationId.getPeriod().lower(),
+            reservationId.getPeriod().upper(),
+            reservationId.getIdTrack(),
+            reservationId.getIdAppUser());
     }
 
 }

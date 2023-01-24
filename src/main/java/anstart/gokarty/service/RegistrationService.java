@@ -64,19 +64,19 @@ public class RegistrationService {
 
     public ResponseEntity<MessageWithTimestamp> activateAccount(String token) {
         EmailConfirmationToken emailConfirmationToken = confirmationTokenService.getToken(token);
-        if (null != emailConfirmationToken.confirmedAt()) {
+        if (null != emailConfirmationToken.getConfirmedAt()) {
             log.error("Account is activate");
             throw new AccountActivationException("Account is activate");
         }
 
-        Instant expiresAt = emailConfirmationToken.expiresAt();
+        Instant expiresAt = emailConfirmationToken.getExpiresAt();
         if (expiresAt.isBefore(Instant.now())) {
             log.error("Token expired");
             throw new AccountActivationException("Token expired");
         }
 
         confirmationTokenService.confirmToken(token);
-        appUserService.enableUser(emailConfirmationToken.idAppUser().getEmail());
+        appUserService.enableUser(emailConfirmationToken.getIdAppUser().getEmail());
 
         return new ResponseEntity<>(
             new MessageWithTimestamp(

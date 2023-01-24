@@ -40,7 +40,7 @@ public class KartService {
         if (kartOptional.isPresent()) {
             return new ResponseEntity<>(
                 kartOptional.map(kart ->
-                    new KartDto(kart.id(), kart.name(), kart.difficultyLevel())).get(),
+                    new KartDto(kart.getId(), kart.getName(), kart.getDifficultyLevel())).get(),
                 HttpStatus.OK
             );
         }
@@ -56,7 +56,7 @@ public class KartService {
 
         return kartRepository.findAll(pageRequest)
             .map(kart ->
-                new KartDto(kart.id(), kart.name(), kart.difficultyLevel())
+                new KartDto(kart.getId(), kart.getName(), kart.getDifficultyLevel())
             );
     }
 
@@ -75,11 +75,11 @@ public class KartService {
             });
 
         if (null != kartDto.getName()) {
-            existing.name(kartDto.getName());
+            existing.setName(kartDto.getName());
         }
 
         if (null != kartDto.getDifficultyLevel()) {
-            existing.difficultyLevel(kartDto.getDifficultyLevel());
+            existing.setDifficultyLevel(kartDto.getDifficultyLevel());
         }
 
 

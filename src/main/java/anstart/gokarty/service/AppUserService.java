@@ -66,10 +66,12 @@ public class AppUserService implements UserDetailsService {
         AppUser savedUser = appUserRepository.save(appUser);
 
         String confirmationToken = UUID.randomUUID().toString();
-        EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken().token(confirmationToken)
-            .createdAt(Instant.now())
-            .expiresAt(Instant.now().plus(Duration.ofMinutes(tokenValidityMinutes)))
-            .idAppUser(savedUser);
+        EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken(
+            confirmationToken,
+            Instant.now(),
+            Instant.now().plus(Duration.ofMinutes(tokenValidityMinutes)),
+            null,
+            savedUser);
 
         EmailConfirmationToken savedToken = emailConfirmationTokenService.saveToken(emailConfirmationToken);
         Set<EmailConfirmationToken> emailConfirmationTokens = new LinkedHashSet<>();

@@ -31,7 +31,6 @@ public class KartController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/karts")
     public Page<KartDto> getKarts() {
-
         log.info("Getting karts");
         return kartService.getKarts();
     }

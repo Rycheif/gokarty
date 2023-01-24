@@ -41,7 +41,7 @@ public class TrackService {
         if (trackOptional.isPresent()) {
             return new ResponseEntity<>(
                 trackOptional.map(track ->
-                    new TrackDto(track.id(), track.length())).get(),
+                    new TrackDto(track.getId(), track.getLength())).get(),
                 HttpStatus.OK);
         }
 
@@ -55,7 +55,7 @@ public class TrackService {
 
         return trackRepository.findAll(pageRequest)
             .map(track ->
-                new TrackDto(track.id(), track.length())
+                new TrackDto(track.getId(), track.getLength())
             );
     }
 
@@ -74,7 +74,7 @@ public class TrackService {
 
 
         if (null != trackDto.getLength()) {
-            existing.length(trackDto.getLength());
+            existing.setLength(trackDto.getLength());
         }
 
 

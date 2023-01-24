@@ -5,9 +5,10 @@ import io.hypersistence.utils.hibernate.type.range.Range;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
@@ -17,7 +18,8 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@Accessors(fluent = true)
+@AllArgsConstructor
+@NoArgsConstructor
 @Embeddable
 public class ReservationId implements Serializable {
     private static final long serialVersionUID = 3475016051101385462L;

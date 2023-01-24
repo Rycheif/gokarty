@@ -4,15 +4,19 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
+import lombok.ToString;
+import org.hibernate.Hibernate;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Getter
 @Setter
+@ToString
+@NoArgsConstructor
 @Entity
-@Accessors(fluent = true)
 @Table(name = "email_confirmation_token", schema = "gokarty", indexes = {
     @Index(name = "IX_FK05", columnList = "id_app_user")
 })
@@ -41,6 +45,27 @@ public class EmailConfirmationToken {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_app_user", nullable = false)
+    @ToString.Exclude
     private AppUser idAppUser;
 
+    public EmailConfirmationToken(String token, Instant createdAt, Instant expiresAt, Instant confirmedAt, AppUser idAppUser) {
+        this.token = token;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.confirmedAt = confirmedAt;
+        this.idAppUser = idAppUser;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        EmailConfirmationToken that = (EmailConfirmationToken) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
