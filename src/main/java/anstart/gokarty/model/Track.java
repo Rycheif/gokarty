@@ -32,6 +32,10 @@ public class Track {
     @ToString.Exclude
     private Set<Reservation> reservations = new LinkedHashSet<>();
 
+    public Track(Integer length) {
+        this.length = length;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

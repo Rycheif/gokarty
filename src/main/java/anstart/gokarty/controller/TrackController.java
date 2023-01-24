@@ -1,16 +1,15 @@
 package anstart.gokarty.controller;
 
-import anstart.gokarty.model.AppUser;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.dto.TrackDto;
 import anstart.gokarty.service.TrackService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
@@ -19,16 +18,14 @@ import org.springframework.web.bind.annotation.*;
 public class TrackController {
     private final TrackService trackService;
 
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/track/{trackId}")
-    public ResponseEntity<TrackDto> getUserById(@PathVariable long trackId, @AuthenticationPrincipal AppUser appUser) {
+    public ResponseEntity<TrackDto> getUserById(@PathVariable long trackId) {
         log.info("Getting track with id {}", trackId);
-        return trackService.getTrackById(trackId, appUser);
+        return trackService.getTrackById(trackId);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/tracks")
-    public Page<TrackDto> getTracks() {
+    public List<TrackDto> getTracks() {
 
         log.info("Getting users");
         return trackService.getTracks();
@@ -43,7 +40,7 @@ public class TrackController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @PostMapping("/newTrack")
-    public ResponseEntity<?> newTrack(@RequestBody TrackDto trackDto) {
+    public ResponseEntity<MessageWithTimestamp> newTrack(@RequestBody TrackDto trackDto) {
         log.info("Creating new track with id: {}", trackDto.getId());
         return trackService.createNewTrack(trackDto);
     }

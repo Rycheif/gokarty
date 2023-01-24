@@ -1,22 +1,18 @@
 package anstart.gokarty.service;
 
 import anstart.gokarty.exception.EntityNotFoundException;
-import anstart.gokarty.exception.ForbiddenContentException;
-import anstart.gokarty.model.AppUser;
 import anstart.gokarty.model.Kart;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.dto.KartDto;
 import anstart.gokarty.repository.KartRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -26,11 +22,7 @@ public class KartService {
 
     private final KartRepository kartRepository;
 
-    public ResponseEntity<KartDto> getKartById(long id, AppUser appUser) {
-        if (!canUserSeeContent(id, appUser)) {
-            log.error("This user can't see this content");
-            throw new ForbiddenContentException("This user can't see this content");
-        }
+    public ResponseEntity<KartDto> getKartById(long id) {
         if (id < 0) {
             log.error("Incorrect id {}", id);
             throw new IllegalArgumentException(String.format("Incorrect id %d", id));
@@ -51,15 +43,13 @@ public class KartService {
 
     }
 
-    public Page<KartDto> getKarts() {
-        PageRequest pageRequest = PageRequest.of(0, 999);
-
-        return kartRepository.findAll(pageRequest)
+    public List<KartDto> getKarts() {
+        return kartRepository.findAll()
+            .stream()
             .map(kart ->
-                new KartDto(kart.getId(), kart.getName(), kart.getDifficultyLevel())
-            );
+                new KartDto(kart.getId(), kart.getName(), kart.getDifficultyLevel()))
+            .toList();
     }
-
 
     public ResponseEntity<MessageWithTimestamp> updateKartData(KartDto kartDto) {
         if (null == kartDto.getId() || kartDto.getId() < 0) {
@@ -82,7 +72,6 @@ public class KartService {
             existing.setDifficultyLevel(kartDto.getDifficultyLevel());
         }
 
-
         kartRepository.save(existing);
 
         log.info("Kart with id {} has been changed", kartDto.getId());
@@ -94,11 +83,8 @@ public class KartService {
             HttpStatus.OK);
     }
 
-
     public ResponseEntity<?> createNewKart(KartDto kartDto) {
-
-
-        if (kartRepository.findById(kartDto.getId()).isPresent()) {
+        if (kartRepository.findByName(kartDto.getName()).isPresent()) {
             log.error("Id: {} is occupied", kartDto.getId());
             return new ResponseEntity<>(
                 new MessageWithTimestamp(
@@ -107,18 +93,13 @@ public class KartService {
                 HttpStatus.FORBIDDEN);
         }
 
-        // TODO: Reszta metody po dodaniu Spring Security
+        kartRepository.save(new Kart(kartDto.getName(), kartDto.getDifficultyLevel()));
 
-        return null;
-    }
-
-
-    private boolean canUserSeeContent(long id, AppUser appUser) {
-        return appUser.getId() == id
-            || appUser.getAuthorities()
-            .stream()
-            .anyMatch(grantedAuthority -> grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                || grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
+        return new ResponseEntity<>(
+            new MessageWithTimestamp(
+                Instant.now(),
+                "Kart created"),
+            HttpStatus.CREATED);
     }
 
 }

@@ -31,6 +31,12 @@ public class Kart {
     @NotNull
     @Column(name = "name", nullable = false, length = 100)
     private String name;
+
+    public Kart(String name, Difficulty difficultyLevel) {
+        this.name = name;
+        this.difficultyLevel = difficultyLevel;
+    }
+
     @ManyToMany
     @JoinTable(
         name = "reservation_kart",
