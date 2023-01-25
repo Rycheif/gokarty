@@ -34,3 +34,8 @@ auth-and-security:
 email:
   from: "gokarty@gokarty.pl"
   confirmation-link: "http://localhost:8080/api/activateAccount?token="
+  path-to-activate-account: "templates/emails/activate.html"
+  path-to-reservation-email: "templates/emails/reservation.html"
+
+other:
+  cost: 40

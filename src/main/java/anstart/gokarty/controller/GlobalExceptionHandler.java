@@ -19,7 +19,8 @@ public class GlobalExceptionHandler {
 //        IllegalArgumentException.class,
         EmailNotValidException.class,
         DateTimeException.class,
-        AccountActivationException.class
+        AccountActivationException.class,
+        IncorrectRequestContentException.class
     })
     public ResponseEntity<MessageWithTimestamp> handleBadRequestExceptions(RuntimeException e) {
 

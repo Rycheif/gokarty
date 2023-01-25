@@ -19,13 +19,13 @@ public class EmailSender {
     @Value("${email.from}")
     private String from;
 
-    public void sendMailWithHtmlBody(String to, String body) {
+    public void sendMailWithHtmlBody(String to, String subject, String body) {
         MimeMessage email = mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(email, "utf-8");
         try {
             mimeMessageHelper.setText(body, true);
             mimeMessageHelper.setTo(to);
-            mimeMessageHelper.setSubject("Activate your account");
+            mimeMessageHelper.setSubject(subject);
             mimeMessageHelper.setFrom(from);
             mailSender.send(email);
         } catch (MessagingException e) {

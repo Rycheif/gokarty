@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<style>
+  * {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .centered-text {
+    text-align: center;
+  }
+
+  .header-text {
+    font-size: 25px;
+    font-weight: bold;
+  }
+
+  .email-body {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center
+  }
+
+  .regular-text {
+    margin: 0 0 20px 0;
+    font-size: 19px;
+    line-height: 25px;
+    color: #0b0c0c;
+  }
+
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td, th {
+    text-align: left;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+<body>
+<main>
+    <header><p class="centered-text header-text">Your reservation</p></header>
+    <section class="email-body">
+        <div>
+            <p class="regular-text">Hi /username/,</p>
+            <p class="regular-text"> Thank you for making reservation.
+                Below there are details of you reservation:
+            </p>
+            <section class="email-body">
+                <table>
+                    <tr>
+                        <th>Time</th>
+                        <th>Karts</th>
+                        <th>Number of people</th>
+                        <th>Cost</th>
+                    </tr>
+                    <tr>
+                        <td>/time/</td>
+                        <td>/karts/</td>
+                        <td>/people/</td>
+                        <td>/cost/</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+    </section>
+</main>
+</body>
+</html>

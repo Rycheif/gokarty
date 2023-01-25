@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<style>
+  * {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .centered-text {
+    text-align: center;
+  }
+
+  .header-text {
+    font-size: 25px;
+    font-weight: bold;
+  }
+
+  .email-body {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center
+  }
+
+  .regular-text {
+    margin: 0 0 20px 0;
+    font-size: 19px;
+    line-height: 25px;
+    color: #0b0c0c;
+  }
+
+  .bar {
+    border-left: 10px solid #b1b4b6;
+    padding: 15px 0 0.1px 15px;
+  }
+</style>
+<body>
+<main>
+    <header><p class="centered-text header-text">Activate your account</p></header>
+    <section class="email-body">
+        <div>
+            <p class="regular-text">Hi /username/</p>
+            <p class="regular-text"> Thank you for registering.
+                Please click on the below link to activate your account:
+            </p>
+            <blockquote class="regular-text bar">
+                <p class="regular-text"><a href="/token/">Activate Now</a></p></blockquote>
+            <p class="regular-text">Link will expire in /tokenValidityMinutes/ minutes.</p>
+            <p class="regular-text">See you soon</p>
+        </div>
+    </section>
+</main>
+</body>
+</html>

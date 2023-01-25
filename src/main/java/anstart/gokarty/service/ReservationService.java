@@ -2,6 +2,7 @@ package anstart.gokarty.service;
 
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.exception.ForbiddenContentException;
+import anstart.gokarty.exception.IncorrectRequestContentException;
 import anstart.gokarty.model.*;
 import anstart.gokarty.payload.MessageWithTimestamp;
 import anstart.gokarty.payload.NewReservationPayload;
@@ -13,9 +14,11 @@ import anstart.gokarty.repository.KartRepository;
 import anstart.gokarty.repository.ReservationRepository;
 import anstart.gokarty.repository.TrackRepository;
 import anstart.gokarty.utility.ReservationMapper;
+import anstart.gokarty.utility.StringFileLoader;
 import io.hypersistence.utils.hibernate.type.range.Range;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -32,17 +36,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final KartRepository kartRepository;
     private final TrackRepository trackRepository;
     private final AppUserRepository appUserRepository;
+    private final StringFileLoader fileLoader;
+    private final EmailSender emailSender;
+    @Value("${email.path-to-reservation-email}")
+    private String pathToEmail;
+    @Value("${other.cost}")
+    private String cost;
+
 
     public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId, AppUser appUser) {
         if (!isIdCorrect(reservationId)) {
@@ -130,6 +142,10 @@ public class ReservationService {
 
     @Transactional
     public ResponseEntity<?> createNewReservation(NewReservationPayload reservationPayload, AppUser appUser) {
+        if (reservationPayload.start().isBefore(LocalDateTime.now())) {
+            log.error("Reservation date cannot be before now");
+            throw new IncorrectRequestContentException("Reservation date cannot be before now");
+        }
         List<ReservationDate> availableReservationTimes = getAvailableReservationTimes(reservationPayload.start());
         if (availableReservationTimes.isEmpty()) {
             log.error("New reservation cannot be made on this day: {}", reservationPayload.start());
@@ -161,13 +177,23 @@ public class ReservationService {
                 track,
                 userEntity,
                 reservationPayload.numberOfPeople(),
-                BigDecimal.valueOf(40).multiply(BigDecimal.valueOf(reservationPayload.numberOfPeople())),
+                BigDecimal.valueOf(Long.parseLong(cost))
+                    .multiply(BigDecimal.valueOf(reservationPayload.numberOfPeople())),
                 reservedKarts));
 
         track.getReservations().add(newReservation);
         trackRepository.save(track);
         userEntity.getReservations().add(newReservation);
         appUserRepository.save(userEntity);
+
+        CompletableFuture.runAsync(() -> {
+                log.debug("Sending email");
+                emailSender.sendMailWithHtmlBody(
+                    userEntity.getEmail(),
+                    "Your reservation",
+                    getEmailBody(userEntity.getUsername(), newReservation));
+            })
+            .thenAccept(unused -> log.debug("Email was successfully sent"));
 
         return new ResponseEntity<>(ReservationMapper.mapToReservationDto(newReservation), HttpStatus.CREATED);
     }
@@ -178,5 +204,23 @@ public class ReservationService {
             .stream()
             .anyMatch(grantedAuthority -> grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_ADMIN"))
                 || grantedAuthority.equals(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
+    }
+
+    private String getEmailBody(String username, Reservation reservation) {
+        String email = fileLoader.loadEmailFile(pathToEmail, StandardCharsets.UTF_8);
+        String replaced = email.replace("/username/", username);
+        String time = reservation.getId().getPeriod().lower().toString()
+            + reservation.getId().getPeriod().upper().toString();
+        String karts = reservation.getKarts()
+            .stream()
+            .map(Kart::getName)
+            .reduce("", (acc, kart) -> acc + kart + ", ");
+
+        replaced = replaced.replace("/time/", time);
+        replaced = replaced.replace("/karts/", karts);
+        replaced = replaced.replace("/people/", reservation.getNumberOfPeople().toString());
+        replaced = replaced.replace("/cost/", reservation.getCost().toString());
+
+        return replaced;
     }
 }
