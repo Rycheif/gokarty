@@ -26,8 +26,7 @@ public class TrackController {
 
     @GetMapping("/tracks")
     public List<TrackDto> getTracks() {
-
-        log.info("Getting users");
+        log.info("Getting tracks");
         return trackService.getTracks();
     }
 

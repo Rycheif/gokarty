@@ -37,9 +37,11 @@ public class ApplicationSecurityConfig {
                         "/api/availableReservationTimes").permitAll()
                     .requestMatchers("/api/register", "/api/activateAccount").permitAll()
                     .requestMatchers("/api/availableReservationTimes").permitAll()
+                    .requestMatchers("/api/track/**", "/api/tracks").permitAll()
+                    .requestMatchers("/api/kart/**", "/api/karts").permitAll()
                     .requestMatchers("/", "index", "/css/*", "/js/*").permitAll()
                     .anyRequest().authenticated())
-            .formLogin(AbstractAuthenticationFilterConfigurer::permitAll) // TODO: Dodać przekierowanie po zalogowaniu
+            .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
             .rememberMe(rememberMe ->
                 rememberMe
                     .tokenValiditySeconds((int) TimeUnit.HOURS.toSeconds(tokenValidityHours))
