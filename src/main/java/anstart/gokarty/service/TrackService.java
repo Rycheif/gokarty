@@ -1,6 +1,5 @@
 package anstart.gokarty.service;
 
-
 import anstart.gokarty.exception.EntityNotFoundException;
 import anstart.gokarty.model.Track;
 import anstart.gokarty.payload.MessageWithTimestamp;
@@ -16,12 +15,21 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service that works together with {@link anstart.gokarty.controller.TrackController}
+ */
 @Slf4j
 @Service
 @AllArgsConstructor
 public class TrackService {
     private final TrackRepository trackRepository;
 
+    /**
+     * Returns a tack with given id.
+     *
+     * @param id valid track's id
+     * @return track
+     */
     public ResponseEntity<TrackDto> getTrackById(long id) {
         if (id < 0) {
             log.error("Incorrect id {}", id);
@@ -41,6 +49,11 @@ public class TrackService {
             String.format("Track with id %d doesn't exist", id));
     }
 
+    /**
+     * Returns list of all tracks.
+     *
+     * @return list of all tracks
+     */
     public List<TrackDto> getTracks() {
 
         return trackRepository.findAll()
@@ -50,6 +63,12 @@ public class TrackService {
             .toList();
     }
 
+    /**
+     * Updates info about the given track. Data that are not meant to be changed should be null
+     *
+     * @param trackDto new track info
+     * @return message if track was changed
+     */
     public ResponseEntity<MessageWithTimestamp> updateTrackData(TrackDto trackDto) {
         if (null == trackDto.getId() || trackDto.getId() < 0) {
             log.error("Track id {} is not correct", trackDto.getId());
@@ -78,7 +97,12 @@ public class TrackService {
             HttpStatus.OK);
     }
 
-
+    /**
+     * Creates a new track.
+     *
+     * @param trackDto data about a new track
+     * @return message of track was created
+     */
     public ResponseEntity<MessageWithTimestamp> createNewTrack(TrackDto trackDto) {
         trackRepository.save(new Track(trackDto.getLength()));
 

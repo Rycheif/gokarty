@@ -33,6 +33,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Service that works together with {@link anstart.gokarty.controller.AppUserController}
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -54,6 +57,11 @@ public class AppUserService implements UserDetailsService {
                 String.format("User with email %s wasn't found", email)));
     }
 
+    /**
+     * Saves a user in the database and generates confirmation token.
+     * @param appUser a user entity to be saved
+     * @return conformation token
+     */
     public String registerUserInTheDB(AppUser appUser) {
         Boolean exists = appUserRepository.existsByEmailIgnoreCase(appUser.getEmail());
         if (exists) {
@@ -83,13 +91,15 @@ public class AppUserService implements UserDetailsService {
             .orElseThrow(() -> new EntityNotFoundException("ROLE_USER was not found"));
 
         savedUser.getRoles().add(appRole);
-        // Jeśli to nie zostanie zrobione Hibernate wyrzuci wyjątek UnsupportedOperationException
-        //reinitializeCollections(savedUser);
         appUserRepository.save(savedUser);
 
         return confirmationToken;
     }
 
+    /**
+     * Activates a user account associated with given email.
+     * @param email valid email
+     */
     public void enableUser(String email) {
         appUserRepository.findByEmail(email)
             .ifPresent(appUser -> {
@@ -98,6 +108,13 @@ public class AppUserService implements UserDetailsService {
             });
     }
 
+    /**
+     * Returns a user with given id. Method also checks if the user has proper role to see the content.
+     *
+     * @param id      valid user's id
+     * @param appUser currently signed-in user entity
+     * @return user
+     */
     public ResponseEntity<AppUserDto> getUserById(long id, AppUser appUser) {
         if (!canUserSeeContent(id, appUser)) {
             log.error("This user can't see this content");
@@ -121,6 +138,12 @@ public class AppUserService implements UserDetailsService {
             String.format("User with id %d doesn't exist", id));
     }
 
+    /**
+     * Returns page of users.
+     * @param page page number
+     * @param size page size
+     * @return page of users
+     */
     public Page<AppUserDto> getUsers(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
 
@@ -128,6 +151,11 @@ public class AppUserService implements UserDetailsService {
             .map(AppUserMapper::mapAppUserToDTO);
     }
 
+    /**
+     * Locks a user with given id. If id is incorrect returns appropriate message
+     * @param id user id
+     * @return message if user was locked
+     */
     @Transactional
     public ResponseEntity<MessageWithTimestamp> lockUser(long id) {
         int affectedRows = appUserRepository.lockUser(id);
@@ -143,7 +171,11 @@ public class AppUserService implements UserDetailsService {
             HttpStatus.NOT_MODIFIED);
     }
 
-
+    /**
+     * Checks if given email is already in use.
+     * @param email valid email
+     * @return true if email is available
+     */
     public Boolean isEmailAvailable(String email) {
         if (!EmailValidator.isEmailValid(email)) {
             log.error("Email {} is not valid", email);
@@ -153,6 +185,11 @@ public class AppUserService implements UserDetailsService {
         return !appUserRepository.existsByEmailIgnoreCase(email);
     }
 
+    /**
+     * Updates a user with new data. Properties which are not meant to be changed must be null.
+     * @param appUserDto new user's info
+     * @return message if user was changed
+     */
     public ResponseEntity<MessageWithTimestamp> updateUsersPersonalData(AppUserDto appUserDto) {
         if (null == appUserDto.getId() || appUserDto.getId() < 0) {
             log.error("AppUser id {} is not correct", appUserDto.getId());
@@ -189,6 +226,11 @@ public class AppUserService implements UserDetailsService {
             HttpStatus.OK);
     }
 
+    /**
+     * Updates a user with given roles.
+     * @param payload payload with id and roles
+     * @return message if user's roles were changed
+     */
     public ResponseEntity<MessageWithTimestamp> updateUsersRoles(UpdateUserRolesPayload payload) {
         if (null == payload.userId() || payload.userId() < 0) {
             log.error("AppUser id {} is not correct", payload.userId());

@@ -15,6 +15,9 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Maps the kart entity from the database.
+ */
 @Entity
 @Getter
 @Setter

@@ -10,6 +10,9 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Maps the reservation entity from the database.
+ */
 @Getter
 @Setter
 @ToString

@@ -15,6 +15,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service that works together with {@link anstart.gokarty.controller.KartController}
+ */
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -22,6 +25,12 @@ public class KartService {
 
     private final KartRepository kartRepository;
 
+    /**
+     * Returns a kart with given id. Method also checks if the kart has proper role to see the content.
+     *
+     * @param id valid kart's id
+     * @return kart
+     */
     public ResponseEntity<KartDto> getKartById(long id) {
         if (id < 0) {
             log.error("Incorrect id {}", id);
@@ -43,6 +52,11 @@ public class KartService {
 
     }
 
+    /**
+     * Returns list of all karts.
+     *
+     * @return list of karts
+     */
     public List<KartDto> getKarts() {
         return kartRepository.findAll()
             .stream()
@@ -51,6 +65,12 @@ public class KartService {
             .toList();
     }
 
+    /**
+     * Updates a kart with new data. Properties which are not meant to be changed must be null.
+     *
+     * @param kartDto new kart's info
+     * @return message if kart was changed
+     */
     public ResponseEntity<MessageWithTimestamp> updateKartData(KartDto kartDto) {
         if (null == kartDto.getId() || kartDto.getId() < 0) {
             log.error("Kart id {} is not correct", kartDto.getId());
@@ -83,7 +103,13 @@ public class KartService {
             HttpStatus.OK);
     }
 
-    public ResponseEntity<?> createNewKart(KartDto kartDto) {
+    /**
+     * Creates new kart from the given DTO
+     *
+     * @param kartDto new kart
+     * @return message that the kart was created and timestamp
+     */
+    public ResponseEntity<MessageWithTimestamp> createNewKart(KartDto kartDto) {
         if (kartRepository.findByName(kartDto.getName()).isPresent()) {
             log.error("Id: {} is occupied", kartDto.getId());
             return new ResponseEntity<>(

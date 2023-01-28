@@ -10,6 +10,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+/**
+ * Class for sending emails. Sender can be defined in the application.yaml file
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,13 @@ public class EmailSender {
     @Value("${email.from}")
     private String from;
 
+    /**
+     * Sends email with given HTML body.
+     *
+     * @param to      recipient's email address
+     * @param subject subject
+     * @param body    HTML body
+     */
     public void sendMailWithHtmlBody(String to, String subject, String body) {
         MimeMessage email = mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(email, "utf-8");

@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Controller which handles everything about reservations
+ */
+
 @Slf4j
 @AllArgsConstructor
 @RequestMapping("api/")
@@ -26,6 +30,13 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
+    /**
+     * Returns a reservation. If reservation does not exist throws {@link anstart.gokarty.exception.EntityNotFoundException}
+     *
+     * @param reservationId valid reservation's id
+     * @param appUser       class implementing {@link org.springframework.security.core.userdetails.UserDetails} interface. Injected by Spring
+     * @return reservation as {@link ReservationDto}
+     */
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/reservation")
     public ResponseEntity<ReservationDto> getReservationById(
@@ -36,6 +47,13 @@ public class ReservationController {
         return reservationService.getReservationById(reservationId, appUser);
     }
 
+    /**
+     * Returns list of reservations in the form of a page.
+     *
+     * @param page page number
+     * @param size size of the page
+     * @return page of the reservations
+     */
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/reservations")
     public Page<ReservationDto> getReservations(@RequestParam int page, @RequestParam int size) {
@@ -44,6 +62,15 @@ public class ReservationController {
         return reservationService.getReservations(page, size);
     }
 
+    /**
+     * Returns list of reservations made by the given user in the form of a page
+     *
+     * @param userId  valid user id
+     * @param page    page number
+     * @param size    size of the page
+     * @param appUser class implementing {@link org.springframework.security.core.userdetails.UserDetails} interface. Injected by Spring
+     * @return page of the reservations
+     */
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/usersReservations")
     public Page<ReservationDto> getUsersReservations(
@@ -56,6 +83,14 @@ public class ReservationController {
         return reservationService.getUsersReservations(userId, page, size, appUser);
     }
 
+    /**
+     * Returns list of the reservations from the given day
+     *
+     * @param year
+     * @param month
+     * @param dayOfMonth
+     * @return list of reservations
+     */
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @GetMapping("/reservationsFromDate")
     public List<ReservationDto> reservationsFromDate(
@@ -67,6 +102,14 @@ public class ReservationController {
         return reservationService.getReservationsFromDate(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
     }
 
+    /**
+     * Returns list of available times for a reservation
+     *
+     * @param year
+     * @param month
+     * @param dayOfMonth
+     * @return list of available times
+     */
     @GetMapping("/availableReservationTimes")
     public List<ReservationDate> availableReservations(
         @RequestParam int year,
@@ -77,6 +120,13 @@ public class ReservationController {
         return reservationService.getAvailableReservationTimes(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
     }
 
+    /**
+     * Creates a new reservations for a user
+     *
+     * @param reservationPayload data about the reservation
+     * @param appUser            class implementing {@link org.springframework.security.core.userdetails.UserDetails} interface. Injected by Spring
+     * @return message with timestamp if creating a reservation fails or a new reservation
+     */
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     @PostMapping("/reservation")
     public ResponseEntity<?> newReservation(

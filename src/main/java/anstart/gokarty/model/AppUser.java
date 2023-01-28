@@ -15,6 +15,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Maps the app_user entity from the database.
+ */
 @Getter
 @Setter
 @ToString

@@ -12,6 +12,9 @@ import org.hibernate.Hibernate;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * Maps the email_confirmation_token entity from the database.
+ */
 @Getter
 @Setter
 @ToString

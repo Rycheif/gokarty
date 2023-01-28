@@ -12,11 +12,13 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.NoSuchElementException;
 
+/**
+ * Controller which handles exceptions which are thrown in the code
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {
-//        IllegalArgumentException.class,
         EmailNotValidException.class,
         DateTimeException.class,
         AccountActivationException.class,

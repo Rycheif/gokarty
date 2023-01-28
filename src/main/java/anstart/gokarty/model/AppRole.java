@@ -13,6 +13,10 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Maps the app_role entity from the database.
+ */
+
 @Getter
 @Setter
 @ToString

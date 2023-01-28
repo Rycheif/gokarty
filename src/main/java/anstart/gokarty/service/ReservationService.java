@@ -39,6 +39,9 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+/**
+ * Service that works together with {@link anstart.gokarty.controller.ReservationController}
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -55,7 +58,13 @@ public class ReservationService {
     @Value("${other.cost}")
     private String cost;
 
-
+    /**
+     * Returns a reservation with given id. Method also checks if the user has proper role to see the content.
+     *
+     * @param reservationId valid reservation's id
+     * @param appUser       valid user entity
+     * @return reservation
+     */
     public ResponseEntity<ReservationDto> getReservationById(ReservationIdDto reservationId, AppUser appUser) {
         if (!isIdCorrect(reservationId)) {
             log.error("Incorrect reservation id");
@@ -82,10 +91,13 @@ public class ReservationService {
         throw new EntityNotFoundException("Reservation with provided id doesn't exist");
     }
 
-    private boolean isIdCorrect(ReservationIdDto reservationId) {
-        return reservationId.getIdAppUser() >= 0 && reservationId.getIdTrack() >= 0;
-    }
-
+    /**
+     * Returns page of reservations.
+     *
+     * @param page page number
+     * @param size page size
+     * @return page of reservations
+     */
     public Page<ReservationDto> getReservations(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         return reservationRepository.findAll(pageRequest)
@@ -93,6 +105,15 @@ public class ReservationService {
 
     }
 
+    /**
+     * Returns reservations of a user.
+     *
+     * @param userId  valid user id
+     * @param page    page number
+     * @param size    page size
+     * @param appUser currently signed-in user
+     * @return page of reservations
+     */
     public Page<ReservationDto> getUsersReservations(long userId, int page, int size, AppUser appUser) {
         if (!canUserSeeContent(userId, appUser)) {
             log.error("This user can't see this content");
@@ -108,6 +129,12 @@ public class ReservationService {
             .map(ReservationMapper::mapToReservationDto);
     }
 
+    /**
+     * Returns reservations from the given day
+     *
+     * @param date date which is to be checked
+     * @return list of reservations
+     */
     public List<ReservationDto> getReservationsFromDate(LocalDateTime date) {
         LocalDateTime lowerBound = date.withHour(9).withMinute(0);
         LocalDateTime upperBound = date.withHour(17).withMinute(0);
@@ -118,6 +145,12 @@ public class ReservationService {
             .toList();
     }
 
+    /**
+     * Returns a list of available times for the given day
+     *
+     * @param date date which is to be checked
+     * @return list of available times
+     */
     public List<ReservationDate> getAvailableReservationTimes(LocalDateTime date) {
         LocalDateTime lowerBound = date.withHour(9).withMinute(0);
         LocalDateTime upperBound = date.withHour(17).withMinute(0);
@@ -140,12 +173,20 @@ public class ReservationService {
             .toList();
     }
 
+    /**
+     * Creates a new reservations for a currently signed-in user entity
+     *
+     * @param reservationPayload data about a new reservation
+     * @param appUser            currently signed-in user entity
+     * @return
+     */
     @Transactional
     public ResponseEntity<?> createNewReservation(NewReservationPayload reservationPayload, AppUser appUser) {
         if (reservationPayload.start().isBefore(LocalDateTime.now())) {
             log.error("Reservation date cannot be before now");
             throw new IncorrectRequestContentException("Reservation date cannot be before now");
         }
+
         List<ReservationDate> availableReservationTimes = getAvailableReservationTimes(reservationPayload.start());
         if (availableReservationTimes.isEmpty()) {
             log.error("New reservation cannot be made on this day: {}", reservationPayload.start());
@@ -207,7 +248,7 @@ public class ReservationService {
     }
 
     private String getEmailBody(String username, Reservation reservation) {
-        String email = fileLoader.loadEmailFile(pathToEmail, StandardCharsets.UTF_8);
+        String email = fileLoader.loadFileAsString(pathToEmail, StandardCharsets.UTF_8);
         String replaced = email.replace("/username/", username);
         String time = reservation.getId().getPeriod().lower().toString()
             + reservation.getId().getPeriod().upper().toString();
@@ -223,4 +264,9 @@ public class ReservationService {
 
         return replaced;
     }
+
+    private boolean isIdCorrect(ReservationIdDto reservationId) {
+        return reservationId.getIdAppUser() >= 0 && reservationId.getIdTrack() >= 0;
+    }
+
 }

@@ -20,6 +20,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Service responsible for registration of a new user.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,12 @@ public class RegistrationService {
     @Value("${auth-and-security.email-confirmation-token-validity-minutes}")
     private int tokenValidityMinutes;
 
+    /**
+     * Register a new user in the database
+     *
+     * @param registrationPayload payload with new user
+     * @return message if user was created
+     */
     @Transactional
     public ResponseEntity<MessageWithTimestamp> registerUser(RegistrationPayload registrationPayload) {
         if (!EmailValidator.isEmailValid(registrationPayload.getEmail())) {
@@ -68,6 +77,12 @@ public class RegistrationService {
             HttpStatus.CREATED);
     }
 
+    /**
+     * Activates account associated with given token
+     *
+     * @param token email confirmation token
+     * @return message if account was activated
+     */
     public ResponseEntity<MessageWithTimestamp> activateAccount(String token) {
         EmailConfirmationToken emailConfirmationToken = confirmationTokenService.getToken(token);
         if (null != emailConfirmationToken.getConfirmedAt()) {
@@ -92,7 +107,7 @@ public class RegistrationService {
     }
 
     private String getEmailBody(String username, String token) {
-        String email = fileLoader.loadEmailFile(pathToEmail, StandardCharsets.UTF_8);
+        String email = fileLoader.loadFileAsString(pathToEmail, StandardCharsets.UTF_8);
         String replaced = email.replace("/username/", username);
         replaced = replaced.replace("/token/", linkToConfirmation + token);
         replaced = replaced.replace("/tokenValidityMinutes/", Integer.toString(tokenValidityMinutes));

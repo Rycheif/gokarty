@@ -17,6 +17,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Class which encapsulates everything regarding securty
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
