@@ -11,6 +11,7 @@ import anstart.gokarty.repository.AppRoleRepository;
 import anstart.gokarty.repository.AppUserRepository;
 import anstart.gokarty.utility.AppUserMapper;
 import anstart.gokarty.utility.EmailValidator;
+import anstart.gokarty.utility.UUIDProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +27,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Service that works together with {@link anstart.gokarty.controller.AppUserController}
@@ -45,6 +46,8 @@ public class AppUserService implements UserDetailsService {
     private final AppRoleRepository appRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailConfirmationTokenService emailConfirmationTokenService;
+    private final Clock clock;
+    private final UUIDProvider randomUUIDProvider;
     @Value("${auth-and-security.email-confirmation-token-validity-minutes}")
     private int tokenValidityMinutes;
 
@@ -73,11 +76,11 @@ public class AppUserService implements UserDetailsService {
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         AppUser savedUser = appUserRepository.save(appUser);
 
-        String confirmationToken = UUID.randomUUID().toString();
+        String confirmationToken = randomUUIDProvider.getRandomUUID().toString();
         EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken(
             confirmationToken,
-            Instant.now(),
-            Instant.now().plus(Duration.ofMinutes(tokenValidityMinutes)),
+            Instant.now(clock),
+            Instant.now(clock).plus(Duration.ofMinutes(tokenValidityMinutes)),
             null,
             savedUser);
 
@@ -163,11 +166,11 @@ public class AppUserService implements UserDetailsService {
         return affectedRows > 0
             ? new ResponseEntity<>(
             new MessageWithTimestamp(
-                Instant.now(),
+                Instant.now(clock),
                 String.format("User with id %d locked", id)),
             HttpStatus.NO_CONTENT)
             : new ResponseEntity<>(
-            new MessageWithTimestamp(Instant.now(), "User wasn't locked"),
+            new MessageWithTimestamp(Instant.now(clock), "User wasn't locked"),
             HttpStatus.NOT_MODIFIED);
     }
 
@@ -220,7 +223,7 @@ public class AppUserService implements UserDetailsService {
         log.info("User with id {} has been changed", appUserDto.getId());
         return new ResponseEntity<>(
             new MessageWithTimestamp(
-                Instant.now(),
+                Instant.now(clock),
                 String.format("User with id %d has been changed",
                     appUserDto.getId())),
             HttpStatus.OK);
@@ -262,7 +265,7 @@ public class AppUserService implements UserDetailsService {
         log.info("User with id {} had their roles changed to {}", payload.userId(), payload.roleName());
         return new ResponseEntity<>(
             new MessageWithTimestamp(
-                Instant.now(),
+                Instant.now(clock),
                 String.format("User with id %d has been changed",
                     payload.userId())),
             HttpStatus.NO_CONTENT);
